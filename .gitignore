@@ -1,0 +1,122 @@
+# =======================================================
+# Gitignore para IBEX Analytics Platform
+# Python, PySpark, Delta Lake, Conda y Entorno de Trabajo
+# =======================================================
+
+# --- Python y Caché ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Entornos Virtuales y Gestores de Paquetes ---
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+conda-env/
+.conda/
+
+# --- Apache Spark, Delta Lake & Hadoop ---
+# Directorios de ejecución y almacén de datos de Spark
+spark-warehouse/
+metastore_db/
+derby.log
+*.spark
+checkpoint/
+checkpoints/
+.checkpoint/
+
+# Logs de Hadoop y Spark
+spark-events/
+*.log
+
+# Tablas Delta locales / temporales si no forman parte del repo
+# (descomenta si no deseas subir los datos de las capas medallion generados en local)
+# bronze/
+# silver/
+# gold/
+# _delta_log/
+
+# --- Bases de Datos y Almacenamiento Local ---
+# Bases de datos SQLite o archivos temporales locales (según Normas.md)
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# --- Variables de Entorno y Credenciales ---
+.env*
+!.env.example
+secrets.yaml
+secrets.json
+config.local.yaml
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.converted.ipynb
+
+# --- Archivos Comprimidos y Entregas (Normas.md) ---
+# Evita subir los zips generados para entrega
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# --- IDEs y Editores de Código ---
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+
+# Otros editores
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# --- Sistema Operativo ---
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
