@@ -52,9 +52,9 @@ spark-events/
 
 # Tablas Delta locales / temporales si no forman parte del repo
 # (descomenta si no deseas subir los datos de las capas medallion generados en local)
-# bronze/
-# silver/
-# gold/
+data/lake/bronze/
+data/lake/silver/
+data/lake/gold/
 # _delta_log/
 
 # --- Bases de Datos y Almacenamiento Local ---
