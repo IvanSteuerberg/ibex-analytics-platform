@@ -30,4 +30,10 @@ class ConsoleView:
         (porque aún no existía en bolsa, por fines de semana o por festivos bursátiles) 
         se representan por la ausencia del registro, no por una fila rellena de nulos.
         """
+    @staticmethod
+    def mostrar_justificacion_select():
+        print("""
+        Al seleccionar únicamente las columnas Date, Ticker, Close podemos ver de un solo vistazo las empresas y sus datos
+        de cierre. Pudiendo analizar la evolución de la acción por días. 
+        """)
     

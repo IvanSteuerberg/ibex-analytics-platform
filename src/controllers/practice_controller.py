@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BRONZE_PATH = os.getenv("BRONZE_PATH")
+SENTIMIENTO_CSV_PATH = os.getenv("SENTIMIENTO_CSV_PATH")
 
 class PracticeController:
     """Controlador que orquesta los modelos y las vistas para los ejercicios."""
@@ -34,3 +35,23 @@ class PracticeController:
         df = self.spark.read.parquet(BRONZE_PATH).select("Ticker", "Date", "Close")
 
         self.view.mostrar_dataframe(df)
+        self.view.mostrar_justificacion_select()
+
+    def ejecutar_ej2a(self):
+        # Guarda el fichero sentimiento_ibex.csv en un DataFrame de PySpark
+        df = self.spark.read.option("header", True).csv(SENTIMIENTO_CSV_PATH)
+        # Observa y comenta que todas las columnas llegan como texto
+        self.view.mostrar_esquema(df)
+
+    def ejecutar_ej2b(self):
+        df = self.spark.read.option("header", True).csv(SENTIMIENTO_CSV_PATH)
+        df.write.mode("overwrite").parquet(BRONZE_PATH + "/sentimiento")
+        print("Se han escrito: ", df.count(), " filas")
+
+    
+    def ejecutar_ej2c(self):
+        df = self.spark.read.parquet(BRONZE_PATH + "/sentimiento")
+        rows_before = df.count()
+        df.write.mode("append").parquet(BRONZE_PATH + "/sentimiento")
+        rows_after = self.spark.read.parquet(BRONZE_PATH + "/sentimiento").count()
+        print("Se han escrito: ", (rows_before - rows_after) ," filas, en modo append, debido a que a las 14652 añade otras 14652 en modo append.")
