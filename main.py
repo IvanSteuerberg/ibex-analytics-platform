@@ -11,7 +11,10 @@ def main():
     # controller.ejecutar_ej1a()
 
     print("Ej1-b")
-    controller.ejecutar_ej1b()
+    # controller.ejecutar_ej1b()
+
+    print("Ej1-c")
+    controller.ejecutar_ej1c()
 
     # Finalizar la sesión de Spark
     spark.stop()

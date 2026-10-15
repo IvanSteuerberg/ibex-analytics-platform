@@ -30,3 +30,7 @@ class PracticeController:
         df = self.spark.read.parquet(BRONZE_PATH)
         self.view.mostrar_esquema(df)
         self.view.mostrar_dataframe(df)
+
+        df = self.spark.read.parquet(BRONZE_PATH).select("Ticker", "Date", "Close")
+
+        self.view.mostrar_dataframe(df)
