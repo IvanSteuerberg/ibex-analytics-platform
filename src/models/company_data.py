@@ -1,10 +1,7 @@
-import json, os
+import json
 from dataclasses import dataclass
 from typing import List, Optional
-from dotenv import load_dotenv
-
-load_dotenv()
-COMPANIES_JSON_PATH = os.getenv("COMPANIES_JSON_PATH")
+from src.config.paths import COMPANIES_JSON_PATH
 
 @dataclass
 class Company:

@@ -21,7 +21,7 @@ class StockDataModel:
         pdf["Ticker"] = ticker
         return self.spark.createDataFrame(pdf)
 
-    def descargar_historico(self, start_date:str, end_date:str) -> DataFrame:
+    def descargar_historico_total(self, start_date:str, end_date:str) -> DataFrame:
         """
         Descarga el histórico de cotización para todos los ticker dado entre dos fechas
         y lo devuelve como un DataFrame de PySpark.
