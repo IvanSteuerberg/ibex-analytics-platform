@@ -1,7 +1,8 @@
+from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 from src.models.stock_data import StockDataModel
 from src.views.console_view import ConsoleView
-from src.config.paths import BRONZE_PATH, SENTIMIENTO_CSV_PATH
+from src.config.paths import BRONZE_PATH, SENTIMIENTO_CSV_PATH, BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX
 
 class PracticeController:
     """Controlador que orquesta los modelos y las vistas para los ejercicios."""
@@ -20,33 +21,38 @@ class PracticeController:
 
     def ejecutar_ej1b(self):
         df = self.stock_model.descargar_historico_total(start_date="2024-10-01", end_date="2026-10-01")
-        df.write.mode("overwrite").parquet(BRONZE_PATH)
+        df.write.mode("overwrite").parquet(BRONZE_PATH_IBEX)
 
     def ejecutar_ej1c(self):
-        df = self.spark.read.parquet(BRONZE_PATH)
+        df = self.spark.read.parquet(BRONZE_PATH_IBEX)
         self.view.mostrar_esquema(df)
         self.view.mostrar_dataframe(df)
 
-        df = self.spark.read.parquet(BRONZE_PATH).select("Ticker", "Date", "Close")
+        df = self.spark.read.parquet(BRONZE_PATH_IBEX).select("Ticker", "Date", "Close")
 
         self.view.mostrar_dataframe(df)
         self.view.mostrar_justificacion_select()
 
     def ejecutar_ej2a(self):
         # Guarda el fichero sentimiento_ibex.csv en un DataFrame de PySpark
-        df = self.spark.read.option("header", True).csv(SENTIMIENTO_CSV_PATH)
+        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
         # Observa y comenta que todas las columnas llegan como texto
         self.view.mostrar_esquema(df)
 
     def ejecutar_ej2b(self):
-        df = self.spark.read.option("header", True).csv(SENTIMIENTO_CSV_PATH)
-        df.write.mode("overwrite").parquet(BRONZE_PATH + "/sentimiento")
+        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
+        df.write.mode("overwrite").parquet(BRONZE_PATH_SENTIMIENTO)
         print("Se han escrito: ", df.count(), " filas")
 
     
     def ejecutar_ej2c(self):
-        df = self.spark.read.parquet(BRONZE_PATH + "/sentimiento")
+        df = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO)
         rows_before = df.count()
-        df.write.mode("append").parquet(BRONZE_PATH + "/sentimiento")
-        rows_after = self.spark.read.parquet(BRONZE_PATH + "/sentimiento").count()
+        df.write.mode("append").parquet(BRONZE_PATH_SENTIMIENTO)
+        rows_after = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO).count()
         print("Se han escrito: ", (rows_before - rows_after) ," filas, en modo append, debido a que a las 14652 añade otras 14652 en modo append.")
+
+    def ejecutar_ej3(self):
+        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_IBEX}`").history().show()
+        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_SENTIMIENTO}`").history().show()
+        self.view.motrar_justificacion_delta_log()

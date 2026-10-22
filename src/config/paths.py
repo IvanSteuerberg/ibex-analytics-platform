@@ -11,6 +11,8 @@ LAKE_DIR = DATA_DIR / "lake"
 
 # Rutas listas para usar (en formato POSIX para compatibilidad total con Spark en Windows)
 BRONZE_PATH = (LAKE_DIR / "bronze").as_posix()
+BRONZE_PATH_SENTIMIENTO = (LAKE_DIR / "bronze" / "sentimiento").as_posix()
+BRONZE_PATH_IBEX = (LAKE_DIR / "bronze" / "ibex").as_posix()
 SILVER_PATH = (LAKE_DIR / "silver").as_posix()
 GOLD_PATH = (LAKE_DIR / "gold").as_posix()
 COMPANIES_JSON_PATH = RAW_DATA_DIR / "companies.json"

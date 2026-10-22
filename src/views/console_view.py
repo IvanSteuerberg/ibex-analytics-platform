@@ -37,3 +37,9 @@ class ConsoleView:
         de cierre. Pudiendo analizar la evolución de la acción por días. 
         """)
     
+    @staticmethod
+    def mostrar_justificacion_delta_log():
+        print("""
+        Podemos observar que en el 0*0.json dentro de _delta_log hay una operación de tipo CONVERT que su fuente es un parquet, es decir, 
+        la operación que se ha realizado en el ejercicio 3
+        """)

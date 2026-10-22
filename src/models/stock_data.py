@@ -8,6 +8,10 @@ class StockDataModel:
     def __init__(self, spark: SparkSession):
         self.spark = spark
 
+    def normalizar_cols(self, pdf):
+        pdf.columns = [str(c).replace(" ", "_") for c in pdf.columns]
+        return pdf
+
     def descargar_historico(
         self, ticker: str, start_date: str, end_date: str
     ) -> DataFrame:
@@ -17,6 +21,7 @@ class StockDataModel:
         """
         pdf = yf.Ticker(ticker).history(start=start_date, end=end_date, interval="1d", auto_adjust=False)
         pdf.reset_index(inplace=True)
+        pdf = self.normalizar_cols(pdf)
         pdf["Date"] = pdf["Date"].dt.date
         pdf["Ticker"] = ticker
         return self.spark.createDataFrame(pdf)
@@ -31,6 +36,7 @@ class StockDataModel:
             ticker = company.ticker
             pdf = yf.Ticker(ticker).history(start=start_date, end=end_date, interval="1d", auto_adjust=False)
             pdf.reset_index(inplace=True)
+            pdf = self.normalizar_cols(pdf)
             pdf["Date"] = pdf["Date"].dt.date
             pdf["Ticker"] = ticker
 
