@@ -18,7 +18,24 @@ class StockDataModel:
         StructField("Dividends", DoubleType(), False),
         StructField("Stock_Splits", DoubleType(), False)
     ])
-    
+
+    # Campos de yf.Ticker(t).info que se guardan de cada empresa: (clave en Yahoo, columna, tipo)
+    CAMPOS_INFO = [
+        ("longName", "Nombre", StringType()),
+        ("sector", "Sector", StringType()),
+        ("industry", "Industria", StringType()),
+        ("country", "Pais", StringType()),
+        ("marketCap", "MarketCap", LongType()),
+        ("beta", "Beta", DoubleType()),
+        ("dividendYield", "DividendYield", DoubleType()),
+        ("recommendationMean", "RecomendacionMedia", DoubleType()),
+    ]
+
+    ESQUEMA_INFO = StructType(
+        [StructField("Ticker", StringType(), False)]
+        + [StructField(columna, tipo, True) for _, columna, tipo in CAMPOS_INFO]
+    )
+
     def __init__(self, spark: SparkSession):
         self.spark = spark
 
@@ -57,6 +74,24 @@ class StockDataModel:
                 df = df.unionByName(df_temp)
 
         return df
+
+    def descargar_info_empresas(self) -> DataFrame:
+        """
+        Descarga los datos descriptivos de cada empresa (sector, industria, país...) desde yf.Ticker(t).info.
+        Es una foto del momento actual, no un histórico.
+        """
+        filas = []
+        for company in CompanyDataModel().get_companies():
+            info = yf.Ticker(company.ticker).info
+            fila = [company.ticker]
+            for clave, _, tipo in self.CAMPOS_INFO:
+                valor = info.get(clave)
+                # Yahoo a veces devuelve enteros en campos decimales (y Spark no los acepta como double)
+                if valor is not None and isinstance(tipo, DoubleType):
+                    valor = float(valor)
+                fila.append(valor)
+            filas.append(fila)
+        return self.spark.createDataFrame(filas, schema=self.ESQUEMA_INFO)
 
     def anadir_close_mas5(self, df: DataFrame) -> DataFrame:
         """Añade la columna Close_mas5 = Close + 5."""

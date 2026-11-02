@@ -95,3 +95,25 @@ class ConsoleView:
     @staticmethod
     def mostrar_justificacion_version_antigua():
         print("No está igual: versionAsOf solo lee la versión antigua, la tabla actual no cambia.")
+
+    @staticmethod
+    def mostrar_sectores_csv(tal_cual: int, normalizados: int):
+        print(f"Sectores distintos en el CSV: {tal_cual} tal cual, {normalizados} tras quitar espacios y unificar mayúsculas")
+
+    @staticmethod
+    def mostrar_reflexion_yahoo():
+        print("Reflexión:")
+        print("- El experto puntúa sectores y Yahoo da el sector de cada empresa (info['sector']) con la misma "
+              "clasificación, así que el sector es el puente: cada cotización (Ticker, Fecha) se cruza con el "
+              "sentimiento de su sector ese día.")
+        print("- Con eso se puede comparar el sentimiento con el retorno diario de sus empresas, el mismo día o "
+              "con un día de retraso para ver si lo anticipa.")
+        print("- Otros datos útiles de Yahoo: industria (más fina que el sector), marketCap (para ponderar el "
+              "sector por tamaño), beta (sensibilidad al mercado), dividendYield, recommendationMean (opinión de "
+              "los analistas, otro 'experto' con el que comparar) y el histórico del índice ^IBEX como referencia.")
+        print("- Limitaciones: info es una foto de hoy, no un histórico; Crypto no tiene empresas en el IBEX; "
+              "Consumer Defensive solo tiene sentimiento desde mayo de 2024 (coincide con la salida a bolsa de Puig, "
+              "su única empresa) y el "
+              "sentimiento acaba el 30-09-2026, así que los precios de octubre no tendrán sentimiento.")
+        print("Referencias: documentación de yfinance (https://ranaroussi.github.io/yfinance/) y Yahoo Finance "
+              "(https://finance.yahoo.com).")

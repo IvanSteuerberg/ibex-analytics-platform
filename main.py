@@ -65,6 +65,16 @@ def main():
     # print("Ej6")
     # controller.ejecutar_ej6()
 
+    # ===== CLASE 3 =====
+
+    # Ej7
+    # print("Ej7")
+    # controller.ejecutar_ej7()
+
+    # Ej8
+    print("Ej8")
+    controller.ejecutar_ej8()
+
     # Finalizar la sesión de Spark
     spark.stop()
 

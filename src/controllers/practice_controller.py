@@ -5,7 +5,7 @@ from src.models.stock_data import StockDataModel
 from src.models.sentiment_data import SentimentDataModel
 from src.models.delta_lake import DeltaLakeModel
 from src.views.console_view import ConsoleView
-from src.config.paths import BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX
+from src.config.paths import BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX, SILVER_PATH_SENTIMIENTO
 
 # Clave que identifica una cotización: una empresa en un día
 CLAVE_PRECIOS = ["Ticker", "Date"]
@@ -105,3 +105,25 @@ class PracticeController:
         self.lake.restaurar_version(BRONZE_PATH_IBEX, VERSION_EJ4)
         self.view.mostrar_historial(self.lake.historial(BRONZE_PATH_IBEX))
         self.view.mostrar_filas_actuales(self.lake.contar_filas(BRONZE_PATH_IBEX))
+
+    def ejecutar_ej7(self):
+        df_info = self.stock_model.descargar_info_empresas()
+        self.view.mostrar_dataframe(df_info.select("Ticker", "Nombre", "Sector", "Industria"), num_filas=36)
+
+        df_sentimiento = self.sentiment_model.leer_csv()
+        sectores_csv = df_sentimiento.select("Sector").distinct().count()
+        sectores_normalizados = self.sentiment_model.normalizar_sector(df_sentimiento).select("Sector").distinct().count()
+        self.view.mostrar_sectores_csv(sectores_csv, sectores_normalizados)
+
+        comparacion = self.sentiment_model.comparar_con_empresas(df_sentimiento, df_info)
+        self.view.mostrar_dataframe(comparacion, num_filas=20)
+        self.view.mostrar_reflexion_yahoo()
+
+    def ejecutar_ej8(self):
+        df_bronze = self.lake.leer_delta(BRONZE_PATH_SENTIMIENTO)
+        df_silver = self.sentiment_model.limpiar(df_bronze)
+        self.lake.escribir_delta(df_silver, SILVER_PATH_SENTIMIENTO, "overwrite")
+        filas_bronze = self.lake.contar_filas(BRONZE_PATH_SENTIMIENTO)
+        filas_silver = self.lake.contar_filas(SILVER_PATH_SENTIMIENTO)
+        self.view.mostrar_antes_despues(filas_bronze, filas_silver)
+        self.view.mostrar_esquema(df_silver)
