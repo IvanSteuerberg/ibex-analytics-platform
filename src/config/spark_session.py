@@ -29,4 +29,8 @@ def get_spark_session(app_name: str = "IBEX35") -> SparkSession:
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
+    # Silencia el error de Windows al borrar la carpeta temporal de Spark al cerrar
+    jvm = spark.sparkContext._jvm
+    jvm.org.apache.logging.log4j.core.config.Configurator.setLevel(
+        "org.apache.spark.util.ShutdownHookManager", jvm.org.apache.logging.log4j.Level.OFF)
     return spark

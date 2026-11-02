@@ -25,8 +25,26 @@ def main():
     # print("Ej2-c")
     # controller.ejecutar_ej2c()
 
-    print("Ej3")
-    controller.ejecutar_ej3()
+    # print("Ej3")
+    # controller.ejecutar_ej3()
+
+    # print("Ej4")
+    # controller.ejecutar_ej4()
+
+    print("Ej5-a")
+    controller.ejecutar_ej5a()
+
+    print("Ej5-b")
+    controller.ejecutar_ej5b()
+
+    print("Ej5-c")
+    controller.ejecutar_ej5c()
+
+    print("Ej5-d")
+    controller.ejecutar_ej5d()
+
+    print("Ej6")
+    controller.ejecutar_ej6()
 
     # Finalizar la sesión de Spark
     spark.stop()

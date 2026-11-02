@@ -46,3 +46,16 @@ class ConsoleView:
     def mostrar_justificacion_delta_log():
         print("Aparece la carpeta _delta_log con el commit 00000000000000000000.json (versión 0, operación CONVERT). "
       "Guarda el esquema y la lista de ficheros parquet existentes; los datos no se reescriben.")
+
+    @staticmethod
+    def mostrar_justificacion_merge_delta():
+        print("La carga es idempotente: repetirla no duplica nada. " \
+        "Las filas se quedan igual")
+
+    @staticmethod
+    def mostrar_justificacion_merge_schema():
+        print("Al añadir la columna Close_mas5, Spark detecta que el esquema ha cambiado. "
+              "Si no se indica mergeSchema, se lanza un error. "
+              "Con mergeSchema, Spark actualiza el esquema del DeltaTable y añade la nueva columna.")
+
+        

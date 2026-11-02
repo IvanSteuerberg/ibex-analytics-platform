@@ -1,3 +1,4 @@
+from delta import DeltaTable
 from pyspark.sql import DataFrame, SparkSession
 import yfinance as yf
 from src.models.company_data import CompanyDataModel, Company
@@ -64,3 +65,20 @@ class StockDataModel:
                 df = df.unionByName(df_temp)
 
         return df
+
+    def obtener_version(self, ruta:str):
+        v = DeltaTable.forPath(self.spark, ruta).history(1).select("version").collect()[0]["version"]
+        return v
+
+    def merge_delta(self, nuevos: DataFrame, ruta: str):
+        """
+        Realiza un merge de un DataFrame con un DeltaTable existente.
+        """
+        destino = DeltaTable.forPath(self.spark, ruta)
+        (destino.alias("d").merge(nuevos.alias("n"), "d.Ticker = n.Ticker AND d.Date = n.Date")
+            .whenNotMatchedInsertAll()
+            .execute())
+
+    def borrar_filas_ticker(self, ruta: str, ticker: str):
+        destino = DeltaTable.forPath(self.spark, ruta)
+        destino.delete(f"Ticker = '{ticker}'")
