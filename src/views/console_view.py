@@ -38,6 +38,10 @@ class ConsoleView:
         print(f"Filas antes: {antes} | Filas después: {despues}")
 
     @staticmethod
+    def mostrar_filas_bronze_silver(filas_bronze: int, filas_silver: int):
+        print(f"Filas bronze: {filas_bronze} | Filas silver: {filas_silver}")
+
+    @staticmethod
     def mostrar_comparacion_versiones(filas_actual: int, filas_antigua: int, version_antigua: int):
         print(f"Filas actual: {filas_actual} | Filas versión {version_antigua}: {filas_antigua}")
 

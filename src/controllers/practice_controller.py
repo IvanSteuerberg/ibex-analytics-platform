@@ -125,5 +125,5 @@ class PracticeController:
         self.lake.escribir_delta(df_silver, SILVER_PATH_SENTIMIENTO, "overwrite")
         filas_bronze = self.lake.contar_filas(BRONZE_PATH_SENTIMIENTO)
         filas_silver = self.lake.contar_filas(SILVER_PATH_SENTIMIENTO)
-        self.view.mostrar_antes_despues(filas_bronze, filas_silver)
+        self.view.mostrar_filas_bronze_silver(filas_bronze, filas_silver)
         self.view.mostrar_esquema(df_silver)
