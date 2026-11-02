@@ -1,10 +1,24 @@
 from pyspark.sql import DataFrame, SparkSession
 import yfinance as yf
 from src.models.company_data import CompanyDataModel, Company
+from pyspark.sql.types import StructType, StructField, DateType, DoubleType, LongType, StringType
 
 class StockDataModel:
     """Modelo responsable de la ingesta y manipulación de datos bursátiles."""
-
+    
+    ESQUEMA = StructType([
+        StructField("Date", DateType(), False),
+        StructField("Open", DoubleType(), False),
+        StructField("High", DoubleType(), False),
+        StructField("Low", DoubleType(), False),
+        StructField("Close", DoubleType(), False),
+        StructField("Adj_Close", DoubleType(), False),
+        StructField("Volume", LongType(), True),
+        StructField("Ticker", StringType(), False),
+        StructField("Dividends", DoubleType(), False),
+        StructField("Stock_Splits", DoubleType(), False)
+    ])
+    
     def __init__(self, spark: SparkSession):
         self.spark = spark
 
@@ -24,7 +38,9 @@ class StockDataModel:
         pdf = self.normalizar_cols(pdf)
         pdf["Date"] = pdf["Date"].dt.date
         pdf["Ticker"] = ticker
-        return self.spark.createDataFrame(pdf)
+        pdf = pdf[self.ESQUEMA.fieldNames()]  # Asegura que las columnas estén en el orden correcto
+
+        return self.spark.createDataFrame(pdf, schema=self.ESQUEMA)
 
     def descargar_historico_total(self, start_date:str, end_date:str) -> DataFrame:
         """
@@ -39,8 +55,8 @@ class StockDataModel:
             pdf = self.normalizar_cols(pdf)
             pdf["Date"] = pdf["Date"].dt.date
             pdf["Ticker"] = ticker
-
-            df_temp = self.spark.createDataFrame(pdf)
+            pdf = pdf[self.ESQUEMA.fieldNames()]  # Asegura que las columnas estén en el orden correcto
+            df_temp = self.spark.createDataFrame(pdf, schema=self.ESQUEMA)
 
             if df is None:
                 df = df_temp

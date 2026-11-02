@@ -30,16 +30,19 @@ class ConsoleView:
         (porque aún no existía en bolsa, por fines de semana o por festivos bursátiles) 
         se representan por la ausencia del registro, no por una fila rellena de nulos.
         """
+    
     @staticmethod
     def mostrar_justificacion_select():
-        print("""
-        Al seleccionar únicamente las columnas Date, Ticker, Close podemos ver de un solo vistazo las empresas y sus datos
-        de cierre. Pudiendo analizar la evolución de la acción por días. 
-        """)
+        print("Parquet es columnar, así que Spark solo lee las 3 columnas pedidas y se salta el resto "
+              "(column pruning): menos I/O, menos memoria y más velocidad.")
+
+    @staticmethod
+    def mostrar_justificacion_csv():
+        print("Todas las columnas llegan como string porque un CSV es texto plano " \
+        "y no guarda tipos.")
+        
     
     @staticmethod
     def mostrar_justificacion_delta_log():
-        print("""
-        Podemos observar que en el 0*0.json dentro de _delta_log hay una operación de tipo CONVERT que su fuente es un parquet, es decir, 
-        la operación que se ha realizado en el ejercicio 3
-        """)
+        print("Aparece la carpeta _delta_log con el commit 00000000000000000000.json (versión 0, operación CONVERT). "
+      "Guarda el esquema y la lista de ficheros parquet existentes; los datos no se reescriben.")

@@ -38,6 +38,7 @@ class PracticeController:
         df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
         # Observa y comenta que todas las columnas llegan como texto
         self.view.mostrar_esquema(df)
+        self.view.mostrar_justificacion_csv()
 
     def ejecutar_ej2b(self):
         df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
@@ -46,13 +47,14 @@ class PracticeController:
 
     
     def ejecutar_ej2c(self):
-        df = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO)
-        rows_before = df.count()
+        rows_before = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO).count()
+        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
         df.write.mode("append").parquet(BRONZE_PATH_SENTIMIENTO)
         rows_after = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO).count()
-        print("Se han escrito: ", (rows_before - rows_after) ," filas, en modo append, debido a que a las 14652 añade otras 14652 en modo append.")
-
+        print(f"Filas antes: {rows_before} | Filas después: {rows_after}")
+        print("Las filas se duplican: Parquet no detecta duplicados y append solo añade ficheros nuevos.")
+        
     def ejecutar_ej3(self):
-        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_IBEX}`").history().show()
-        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_SENTIMIENTO}`").history().show()
-        self.view.motrar_justificacion_delta_log()
+        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_IBEX}`").history().select("version", "timestamp", "operation").show(truncate=False)
+        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_SENTIMIENTO}`").history().select("version", "timestamp", "operation").show(truncate=False)
+        self.view.mostrar_justificacion_delta_log()
