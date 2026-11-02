@@ -17,6 +17,36 @@ class ConsoleView:
             df.printSchema()
 
     @staticmethod
+    def mostrar_historial(df_historial: DataFrame):
+        """Muestra el historial de versiones de una tabla Delta sin truncar."""
+        df_historial.show(truncate=False)
+
+    @staticmethod
+    def mostrar_version(version: int):
+        print(f"Versión actual de la tabla: {version}")
+
+    @staticmethod
+    def mostrar_filas_escritas(filas: int):
+        print(f"Se han escrito {filas} filas")
+
+    @staticmethod
+    def mostrar_filas_actuales(filas: int):
+        print(f"Filas actuales de la tabla: {filas}")
+
+    @staticmethod
+    def mostrar_antes_despues(antes: int, despues: int):
+        print(f"Filas antes: {antes} | Filas después: {despues}")
+
+    @staticmethod
+    def mostrar_comparacion_versiones(filas_actual: int, filas_antigua: int, version_antigua: int):
+        print(f"Filas actual: {filas_actual} | Filas versión {version_antigua}: {filas_antigua}")
+
+    @staticmethod
+    def mostrar_error(e: Exception):
+        """Muestra solo la primera línea del error (el mensaje completo de Spark es muy largo)."""
+        print(str(e).split("\n")[0])
+
+    @staticmethod
     def mostrar_justificacion_nulos():
         """Muestra la justificación teórica sobre la nulabilidad de las columnas."""
         print("Fecha: no nulo. Clave temporal fundamental para ordenar y cruzar series temporales.")
@@ -43,6 +73,10 @@ class ConsoleView:
         
     
     @staticmethod
+    def mostrar_justificacion_append_parquet():
+        print("Las filas se duplican: Parquet no detecta duplicados y append solo añade ficheros nuevos.")
+
+    @staticmethod
     def mostrar_justificacion_delta_log():
         print("Aparece la carpeta _delta_log con el commit 00000000000000000000.json (versión 0, operación CONVERT). "
       "Guarda el esquema y la lista de ficheros parquet existentes; los datos no se reescriben.")
@@ -58,4 +92,6 @@ class ConsoleView:
               "Si no se indica mergeSchema, se lanza un error. "
               "Con mergeSchema, Spark actualiza el esquema del DeltaTable y añade la nueva columna.")
 
-        
+    @staticmethod
+    def mostrar_justificacion_version_antigua():
+        print("No está igual: versionAsOf solo lee la versión antigua, la tabla actual no cambia.")

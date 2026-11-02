@@ -1,10 +1,17 @@
-from delta.tables import DeltaTable
-from pyspark.sql import SparkSession, functions as F
-from src.models.stock_data import StockDataModel
-from src.views.console_view import ConsoleView
-from src.config.paths import BRONZE_PATH, SENTIMIENTO_CSV_PATH, BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX
 from datetime import date
+from pyspark.sql import SparkSession
 from pyspark.errors import AnalysisException
+from src.models.stock_data import StockDataModel
+from src.models.sentiment_data import SentimentDataModel
+from src.models.delta_lake import DeltaLakeModel
+from src.views.console_view import ConsoleView
+from src.config.paths import BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX
+
+# Clave que identifica una cotización: una empresa en un día
+CLAVE_PRECIOS = ["Ticker", "Date"]
+# Versión de bronze/ibex tras el Ej4 (0 = CONVERT del Ej3, 1 = MERGE del Ej4)
+VERSION_EJ4 = 1
+
 
 class PracticeController:
     """Controlador que orquesta los modelos y las vistas para los ejercicios."""
@@ -12,10 +19,11 @@ class PracticeController:
     def __init__(self, spark: SparkSession):
         self.spark = spark
         self.stock_model = StockDataModel(spark)
+        self.sentiment_model = SentimentDataModel(spark)
+        self.lake = DeltaLakeModel(spark)
         self.view = ConsoleView()
 
     def ejecutar_ej1a(self):
-        """Orquesta la ejecución del Ejercicio 1-a."""
         df = self.stock_model.descargar_historico(ticker="BBVA.MC", start_date="2021-10-01", end_date="2026-10-01")
         self.view.mostrar_dataframe(df)
         self.view.mostrar_esquema(df)
@@ -23,87 +31,77 @@ class PracticeController:
 
     def ejecutar_ej1b(self):
         df = self.stock_model.descargar_historico_total(start_date="2024-10-01", end_date="2026-10-01")
-        df.write.mode("overwrite").parquet(BRONZE_PATH_IBEX)
+        self.lake.escribir_parquet(df, BRONZE_PATH_IBEX)
 
     def ejecutar_ej1c(self):
-        df = self.spark.read.parquet(BRONZE_PATH_IBEX)
+        df = self.lake.leer_parquet(BRONZE_PATH_IBEX)
         self.view.mostrar_esquema(df)
         self.view.mostrar_dataframe(df)
 
-        df = self.spark.read.parquet(BRONZE_PATH_IBEX).select("Ticker", "Date", "Close")
-
+        df = self.lake.leer_parquet(BRONZE_PATH_IBEX).select("Ticker", "Date", "Close")
         self.view.mostrar_dataframe(df)
         self.view.mostrar_justificacion_select()
 
     def ejecutar_ej2a(self):
-        # Guarda el fichero sentimiento_ibex.csv en un DataFrame de PySpark
-        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
-        # Observa y comenta que todas las columnas llegan como texto
+        df = self.sentiment_model.leer_csv()
         self.view.mostrar_esquema(df)
         self.view.mostrar_justificacion_csv()
 
     def ejecutar_ej2b(self):
-        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
-        df.write.mode("overwrite").parquet(BRONZE_PATH_SENTIMIENTO)
-        print("Se han escrito: ", df.count(), " filas")
+        df = self.sentiment_model.leer_csv()
+        self.lake.escribir_parquet(df, BRONZE_PATH_SENTIMIENTO)
+        self.view.mostrar_filas_escritas(df.count())
 
-    
     def ejecutar_ej2c(self):
-        rows_before = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO).count()
-        df = self.spark.read.option("header", True).option("sep", ";").csv(SENTIMIENTO_CSV_PATH)
-        df.write.mode("append").parquet(BRONZE_PATH_SENTIMIENTO)
-        rows_after = self.spark.read.parquet(BRONZE_PATH_SENTIMIENTO).count()
-        print(f"Filas antes: {rows_before} | Filas después: {rows_after}")
-        print("Las filas se duplican: Parquet no detecta duplicados y append solo añade ficheros nuevos.")
-        
+        antes = self.lake.leer_parquet(BRONZE_PATH_SENTIMIENTO).count()
+        df = self.sentiment_model.leer_csv()
+        self.lake.escribir_parquet(df, BRONZE_PATH_SENTIMIENTO, modo="append")
+        despues = self.lake.leer_parquet(BRONZE_PATH_SENTIMIENTO).count()
+        self.view.mostrar_antes_despues(antes, despues)
+        self.view.mostrar_justificacion_append_parquet()
+
     def ejecutar_ej3(self):
-        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_IBEX}`").history().select("version", "timestamp", "operation").show(truncate=False)
-        DeltaTable.convertToDelta(self.spark, f"parquet.`{BRONZE_PATH_SENTIMIENTO}`").history().select("version", "timestamp", "operation").show(truncate=False)
+        for ruta in (BRONZE_PATH_IBEX, BRONZE_PATH_SENTIMIENTO):
+            self.lake.convertir_a_delta(ruta)
+            self.view.mostrar_historial(self.lake.historial(ruta))
         self.view.mostrar_justificacion_delta_log()
 
     def ejecutar_ej4(self):
-        version = self.stock_model.obtener_version(BRONZE_PATH_IBEX)
-        print(f"La versión actual del DeltaTable en {BRONZE_PATH_IBEX} es: {version}")
-        filas_antes = self.spark.read.format("delta").load(BRONZE_PATH_IBEX).count()
+        self.view.mostrar_version(self.lake.obtener_version(BRONZE_PATH_IBEX))
+        antes = self.lake.contar_filas(BRONZE_PATH_IBEX)
         df = self.stock_model.descargar_historico_total(start_date="2024-10-01", end_date=date.today().isoformat())
-        self.stock_model.merge_delta(df, BRONZE_PATH_IBEX)
-        filas_despues = self.spark.read.format("delta").load(BRONZE_PATH_IBEX).count()
-        print(f"Filas antes: {filas_antes} | Filas después: {filas_despues}")
+        self.lake.merge_insertar_nuevos(df, BRONZE_PATH_IBEX, CLAVE_PRECIOS)
+        despues = self.lake.contar_filas(BRONZE_PATH_IBEX)
+        self.view.mostrar_antes_despues(antes, despues)
         self.view.mostrar_justificacion_merge_delta()
 
     def ejecutar_ej5a(self):
-        df = self.spark.read.format("delta").load(BRONZE_PATH_IBEX)
-        df_nuevo = df.withColumn("Close_mas5", F.col("Close") + 5)
+        df = self.stock_model.anadir_close_mas5(self.lake.leer_delta(BRONZE_PATH_IBEX))
         try:
-            df_nuevo.write.format("delta").mode("append").save(BRONZE_PATH_IBEX)
+            self.lake.escribir_delta(df, BRONZE_PATH_IBEX)
         except AnalysisException as e:
-            print(str(e).split("\n")[0])
+            self.view.mostrar_error(e)
 
     def ejecutar_ej5b(self):
-        df = self.spark.read.format("delta").load(BRONZE_PATH_IBEX)
-        df_nuevo = df.withColumn("Close_mas5", F.col("Close") + 5)
-        df_nuevo.write.format("delta").mode("append").option("mergeSchema", "true").save(BRONZE_PATH_IBEX)
+        df = self.stock_model.anadir_close_mas5(self.lake.leer_delta(BRONZE_PATH_IBEX))
+        self.lake.escribir_delta(df, BRONZE_PATH_IBEX, merge_schema=True)
         self.view.mostrar_justificacion_merge_schema()
 
     def ejecutar_ej5c(self):
-        filas_antes = self.spark.read.format("delta").load(BRONZE_PATH_IBEX).count()
-        self.stock_model.borrar_filas_ticker(BRONZE_PATH_IBEX, "BBVA.MC")
-        filas_despues = self.spark.read.format("delta").load(BRONZE_PATH_IBEX).count()
-        print(f"Filas antes: {filas_antes} | Filas después: {filas_despues}")
+        antes = self.lake.contar_filas(BRONZE_PATH_IBEX)
+        self.lake.borrar_filas(BRONZE_PATH_IBEX, "Ticker = 'BBVA.MC'")
+        despues = self.lake.contar_filas(BRONZE_PATH_IBEX)
+        self.view.mostrar_antes_despues(antes, despues)
 
     def ejecutar_ej5d(self):
-        # DeltaTable.forPath(self.spark, BRONZE_PATH_IBEX).history().show()
-        # Formateado para poder leer algo
-        (DeltaTable.forPath(self.spark, BRONZE_PATH_IBEX).history()
-        .select("version", "timestamp", "operation").show(truncate=False))
-        df_v1 = self.spark.read.format("delta").option("versionAsOf", 1).load(BRONZE_PATH_IBEX)
-        df_actual = self.spark.read.format("delta").load(BRONZE_PATH_IBEX)
-        print(f"Filas actual: {df_actual.count()} | Filas versión 1: {df_v1.count()}")
+        self.view.mostrar_historial(self.lake.historial(BRONZE_PATH_IBEX))
+        # La versión de antes del Ej5a es la del Ej4 (el Ej5a falló y no dejó versión)
+        filas_v_ej4 = self.lake.leer_delta(BRONZE_PATH_IBEX, version=VERSION_EJ4).count()
+        filas_actual = self.lake.contar_filas(BRONZE_PATH_IBEX)
+        self.view.mostrar_comparacion_versiones(filas_actual, filas_v_ej4, VERSION_EJ4)
+        self.view.mostrar_justificacion_version_antigua()
 
     def ejecutar_ej6(self):
-        tabla = DeltaTable.forPath(self.spark, BRONZE_PATH_IBEX)
-        tabla.restoreToVersion(1)
-        (DeltaTable.forPath(self.spark, BRONZE_PATH_IBEX).history()
-                .select("version", "timestamp", "operation").show(truncate=False))
-
-
+        self.lake.restaurar_version(BRONZE_PATH_IBEX, VERSION_EJ4)
+        self.view.mostrar_historial(self.lake.historial(BRONZE_PATH_IBEX))
+        self.view.mostrar_filas_actuales(self.lake.contar_filas(BRONZE_PATH_IBEX))

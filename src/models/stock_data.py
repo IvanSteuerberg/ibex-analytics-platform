@@ -1,7 +1,6 @@
-from delta import DeltaTable
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame, SparkSession, functions as F
 import yfinance as yf
-from src.models.company_data import CompanyDataModel, Company
+from src.models.company_data import CompanyDataModel
 from pyspark.sql.types import StructType, StructField, DateType, DoubleType, LongType, StringType
 
 class StockDataModel:
@@ -50,14 +49,7 @@ class StockDataModel:
         """
         df = None
         for company in CompanyDataModel().get_companies():
-            ticker = company.ticker
-            pdf = yf.Ticker(ticker).history(start=start_date, end=end_date, interval="1d", auto_adjust=False)
-            pdf.reset_index(inplace=True)
-            pdf = self.normalizar_cols(pdf)
-            pdf["Date"] = pdf["Date"].dt.date
-            pdf["Ticker"] = ticker
-            pdf = pdf[self.ESQUEMA.fieldNames()]  # Asegura que las columnas estén en el orden correcto
-            df_temp = self.spark.createDataFrame(pdf, schema=self.ESQUEMA)
+            df_temp = self.descargar_historico(company.ticker, start_date, end_date)
 
             if df is None:
                 df = df_temp
@@ -66,19 +58,6 @@ class StockDataModel:
 
         return df
 
-    def obtener_version(self, ruta:str):
-        v = DeltaTable.forPath(self.spark, ruta).history(1).select("version").collect()[0]["version"]
-        return v
-
-    def merge_delta(self, nuevos: DataFrame, ruta: str):
-        """
-        Realiza un merge de un DataFrame con un DeltaTable existente.
-        """
-        destino = DeltaTable.forPath(self.spark, ruta)
-        (destino.alias("d").merge(nuevos.alias("n"), "d.Ticker = n.Ticker AND d.Date = n.Date")
-            .whenNotMatchedInsertAll()
-            .execute())
-
-    def borrar_filas_ticker(self, ruta: str, ticker: str):
-        destino = DeltaTable.forPath(self.spark, ruta)
-        destino.delete(f"Ticker = '{ticker}'")
+    def anadir_close_mas5(self, df: DataFrame) -> DataFrame:
+        """Añade la columna Close_mas5 = Close + 5."""
+        return df.withColumn("Close_mas5", F.col("Close") + 5)
