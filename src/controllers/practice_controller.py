@@ -5,7 +5,7 @@ from src.models.stock_data import StockDataModel
 from src.models.sentiment_data import SentimentDataModel
 from src.models.delta_lake import DeltaLakeModel
 from src.views.console_view import ConsoleView
-from src.config.paths import BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX, SILVER_PATH_SENTIMIENTO
+from src.config.paths import BRONZE_PATH_EMPRESA, BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX, SILVER_PATH_EMPRESA, SILVER_PATH_IBEX, SILVER_PATH_SENTIMIENTO
 
 # Clave que identifica una cotización: una empresa en un día
 CLAVE_PRECIOS = ["Ticker", "Date"]
@@ -121,9 +121,26 @@ class PracticeController:
 
     def ejecutar_ej8(self):
         df_bronze = self.lake.leer_delta(BRONZE_PATH_SENTIMIENTO)
-        df_silver = self.sentiment_model.limpiar(df_bronze)
+        df_silver = self.sentiment_model.limpiar_sentimiento(df_bronze)
         self.lake.escribir_delta(df_silver, SILVER_PATH_SENTIMIENTO, "overwrite")
         filas_bronze = self.lake.contar_filas(BRONZE_PATH_SENTIMIENTO)
         filas_silver = self.lake.contar_filas(SILVER_PATH_SENTIMIENTO)
         self.view.mostrar_filas_bronze_silver(filas_bronze, filas_silver)
         self.view.mostrar_esquema(df_silver)
+
+    def ejecutar_ej9(self):
+        # IBEX leer bronze, limpiar y guardar silver
+        df_ibex_bronze = self.lake.leer_delta(BRONZE_PATH_IBEX)
+        df_ibex_silver = self.stock_model.limpiar_ibex(df_ibex_bronze)
+        self.lake.escribir_delta(df_ibex_silver, SILVER_PATH_IBEX, "overwrite")
+
+        # EMPRESA descargar y guardar bronze, leer bronze, limpiar y guardar silver
+        df_empresa_bronze = self.stock_model.descargar_info_empresas()
+        self.lake.escribir_delta(df_empresa_bronze, BRONZE_PATH_EMPRESA, "overwrite")
+        df_empresa_bronze = self.lake.leer_delta(BRONZE_PATH_EMPRESA)
+        df_empresa_silver = self.stock_model.limpiar_info_empresas(df_empresa_bronze)
+        self.lake.escribir_delta(df_empresa_silver, SILVER_PATH_EMPRESA, "overwrite")
+
+        # Mostrar filas
+        self.view.mostrar_dataframe(df_ibex_silver, truncar=True)
+        self.view.mostrar_dataframe(df_empresa_silver, truncar=True)

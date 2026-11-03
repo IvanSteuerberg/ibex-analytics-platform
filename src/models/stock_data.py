@@ -96,3 +96,13 @@ class StockDataModel:
     def anadir_close_mas5(self, df: DataFrame) -> DataFrame:
         """Añade la columna Close_mas5 = Close + 5."""
         return df.withColumn("Close_mas5", F.col("Close") + 5)
+
+    def limpiar_ibex(self, df: DataFrame) -> DataFrame:
+        df = df.dropna(subset=["Ticker", "Date", "Open", "High", "Low", "Close"])
+        df = df.dropDuplicates(["Ticker", "Date"])
+        return df
+
+    def limpiar_info_empresas(self, df: DataFrame) -> DataFrame:
+        df = df.dropDuplicates(["Ticker"])
+        df = df.dropna(subset=["Sector"])
+        return df

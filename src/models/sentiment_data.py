@@ -31,7 +31,7 @@ class SentimentDataModel:
                 .fillna(0, subset=["Empresas"])
                 .orderBy(F.desc("Empresas")))
 
-    def limpiar(self, df: DataFrame):
+    def limpiar_sentimiento(self, df: DataFrame):
         df = self.normalizar_sector(df)
         df = df.withColumn("Fecha", F.to_date(F.col("Fecha")))
         df = df.withColumn("Sentimiento", F.regexp_replace(F.col("Sentimiento"), ",", "."))

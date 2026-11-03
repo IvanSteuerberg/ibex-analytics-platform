@@ -18,3 +18,6 @@ GOLD_PATH = (LAKE_DIR / "gold").as_posix()
 COMPANIES_JSON_PATH = RAW_DATA_DIR / "companies.json"
 SENTIMIENTO_CSV_PATH = (RAW_DATA_DIR / "sentimiento_ibex.csv").as_posix()
 SILVER_PATH_SENTIMIENTO = (LAKE_DIR / "silver" / "sentimiento").as_posix()
+BRONZE_PATH_EMPRESA = (LAKE_DIR / "bronze" / "empresa").as_posix()
+SILVER_PATH_EMPRESA = (LAKE_DIR / "silver" / "empresa").as_posix()
+SILVER_PATH_IBEX = (LAKE_DIR / "silver" / "ibex").as_posix()
