@@ -120,3 +120,7 @@ $RECYCLE.BIN/
 # Linux
 *~
 .directory
+
+# --- LaTeX (solo se versiona el .tex de la memoria) ---
+memoria/*
+!memoria/*.tex

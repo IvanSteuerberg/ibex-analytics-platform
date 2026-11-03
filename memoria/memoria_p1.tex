@@ -1,0 +1,212 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla,es-noshorthands]{babel} % noshorthands: que " no se convierta en diéresis
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\setlist{nosep}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em} % evita que el código largo se salga del margen
+
+% Código en línea: \code{spark.read}. Los guiones bajos se escriben \_
+\newcommand{\code}[1]{\texttt{#1}}
+% Hueco para lo que falta por escribir
+\newcommand{\pendiente}{\textit{Pendiente.}}
+
+\title{Práctica 1: Data Lake con Delta y limpieza de datos\\
+\large Decisiones tomadas en cada ejercicio}
+\author{Grupo 4: Iván y Álvaro}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Clase 1: capa bronze en Parquet}
+
+\subsection*{Ej1a: descarga de una acción}
+\begin{itemize}
+    \item \textbf{Función:} \code{yf.Ticker(t).history(start, end, interval="1d", auto\_adjust=False)}, \code{reset\_index()} y \code{spark.createDataFrame(pdf, schema)}.
+    \item \textbf{Por qué:} yfinance devuelve un DataFrame de pandas con la fecha como índice; Spark no tiene índices, así que \code{reset\_index()} la convierte en la columna \code{Date}. Se sustituyen los espacios de los nombres (\code{Stock Splits} $\rightarrow$ \code{Stock\_Splits}) porque Delta no los admite, y se añade la columna \code{Ticker}.
+    \item \textbf{Nulos:} se define un \code{StructType} explícito. \code{Date}, \code{Ticker} y los precios no admiten nulos (son la clave y la información básica de la sesión); \code{Dividends} y \code{Stock\_Splits} tampoco, porque los días sin evento valen 0.0; \code{Volume} sí, porque puede no registrarse negociación. Los días sin cotización se representan por la ausencia de fila.
+    \item \textbf{Resultado:} el esquema muestra \code{nullable = false} en todas las columnas salvo \code{Volume}. Al escribir en Parquet Spark vuelve a marcarlas todas como \textit{nullable} por compatibilidad, así que la restricción solo existe en memoria.
+\end{itemize}
+
+\subsection*{Ej1b: IBEX-35 completo en bronze}
+\begin{itemize}
+    \item \textbf{Función:} \code{descargar\_historico\_total}, que llama a la función del Ej1a para cada empresa de \code{companies.json} y las apila con \code{unionByName}.
+    \item \textbf{Escritura:} \code{write.mode("overwrite").parquet(...)}.
+    \item \textbf{Por qué:} \code{unionByName} junta por nombre de columna y no por posición, que es más seguro. En bronze el dato se guarda crudo, sin transformar.
+    \item \textbf{Resultado:} 18\,360 filas (36 empresas $\times$ 510 sesiones) entre el 1-10-2024 y el 30-09-2026 (en yfinance el \code{end} no se incluye).
+\end{itemize}
+
+\subsection*{Ej1c: lectura y column pruning}
+\begin{itemize}
+    \item \textbf{Función:} \code{spark.read.parquet(...)} y \code{.select("Ticker", "Date", "Close")}.
+    \item \textbf{Interpretación:} Parquet es columnar, así que al seleccionar solo 3 columnas Spark lee únicamente esos \textit{column chunks} y se salta el resto (\textit{column pruning}): menos I/O, menos memoria y más velocidad.
+\end{itemize}
+
+\subsection*{Ej2a: lectura del CSV de sentimiento}
+\begin{itemize}
+    \item \textbf{Función:} \code{spark.read.option("header", True).option("sep", ";").csv(...)}.
+    \item \textbf{Interpretación:} las tres columnas (\code{Fecha}, \code{Sector}, \code{Sentimiento}) llegan como \code{string} porque un CSV es texto plano y no guarda tipos. No se usa \code{inferSchema}: el tipado se hace en silver.
+\end{itemize}
+
+\subsection*{Ej2b: sentimiento en bronze}
+\begin{itemize}
+    \item \textbf{Función:} \code{write.mode("overwrite").parquet(...)} en su propia carpeta, porque tiene un esquema distinto al de los precios.
+    \item \textbf{Resultado:} 14\,652 filas escritas.
+\end{itemize}
+
+\subsection*{Ej2c: append en Parquet}
+\begin{itemize}
+    \item \textbf{Función:} la misma carga con \code{mode("append")}, contando las filas antes y después.
+    \item \textbf{Interpretación:} se pasa de 14\,652 a 29\,304 filas. Un fichero Parquet es inmutable y \code{append} solo añade ficheros nuevos sin comprobar si los datos ya existen, así que la carga no es idempotente. Los duplicados quedan en bronze y se eliminan en silver con \code{dropDuplicates()}.
+\end{itemize}
+
+\section*{Clase 2: Delta Lake}
+
+\subsection*{Ej3: conversión a Delta}
+\begin{itemize}
+    \item \textbf{Función:} \code{DeltaTable.convertToDelta(spark, "parquet.\textasciigrave ruta\textasciigrave")} y \code{history()}.
+    \item \textbf{Interpretación:} no se reescriben los datos; solo aparece la carpeta \code{\_delta\_log} con el commit \code{00000000000000000000.json} (versión 0, operación \code{CONVERT}), que guarda el esquema y la lista de ficheros Parquet existentes. Volver a convertir una tabla que ya es Delta no hace nada.
+\end{itemize}
+
+\subsection*{Ej4: MERGE con datos nuevos}
+\begin{itemize}
+    \item \textbf{Función:} \code{merge} con clave \code{(Ticker, Date)} y \code{whenNotMatchedInsertAll()}; la versión actual se obtiene con \code{history(1).select("version").collect()[0][0]}.
+    \item \textbf{Por qué:} solo se insertan las filas cuya clave no existe en la tabla, sin tocar las que ya están.
+    \item \textbf{Resultado:} en la primera ejecución se pasa de 18\,360 a 19\,152 filas (792 nuevas: 22 sesiones $\times$ 36 empresas). En la segunda las filas no cambian y no se crea una versión nueva: la carga es idempotente, al contrario que el \code{append} del Ej2c.
+\end{itemize}
+
+\subsection*{Ej5a: schema enforcement}
+\begin{itemize}
+    \item \textbf{Función:} \code{withColumn("Close\_mas5", F.col("Close") + 5)} y escritura en \code{append}, capturando la \code{AnalysisException}.
+    \item \textbf{Interpretación:} Delta rechaza la escritura porque la tabla tiene 10 columnas y los datos 11. La operación falla entera y no deja versión (atomicidad).
+\end{itemize}
+
+\subsection*{Ej5b: schema evolution}
+\begin{itemize}
+    \item \textbf{Función:} la misma escritura con \code{.option("mergeSchema", "true")}.
+    \item \textbf{Interpretación:} ahora Delta acepta la columna nueva. Las filas antiguas quedan con \code{Close\_mas5} nulo y, al ser un \code{append} de la tabla entera, todas las filas aparecen duplicadas (38\,304).
+\end{itemize}
+
+\subsection*{Ej5c: DELETE}
+\begin{itemize}
+    \item \textbf{Función:} \code{DeltaTable.delete("Ticker = 'BBVA.MC'")}. El ticker lleva el sufijo \code{.MC} de la Bolsa de Madrid.
+    \item \textbf{Resultado:} de 38\,304 a 37\,240 filas, sin reescribir el resto de la tabla.
+\end{itemize}
+
+\subsection*{Ej5d: historial y time travel}
+\begin{itemize}
+    \item \textbf{Función:} \code{history()} y \code{option("versionAsOf", 1)}. La versión anterior al Ej5a es la 1 (el MERGE del Ej4), porque el Ej5a falló y no dejó versión.
+    \item \textbf{Interpretación:} la tabla actual tiene 37\,240 filas y la versión 1, 19\,152: no está igual. \code{versionAsOf} solo lee la versión antigua y no modifica la tabla.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cll}
+\toprule
+Versión & Operación & Ejercicio \\
+\midrule
+0 & CONVERT & Ej3 \\
+1 & MERGE & Ej4 \\
+2 & WRITE (append) & Ej5b \\
+3 & DELETE & Ej5c \\
+4 & RESTORE & Ej6 \\
+\bottomrule
+\end{tabular}
+\caption{Historial de \code{bronze/ibex}.}
+\end{table}
+
+\subsection*{Ej6: RESTORE}
+\begin{itemize}
+    \item \textbf{Función:} \code{restoreToVersion(1)}.
+    \item \textbf{Interpretación:} la tabla vuelve a las 19\,152 filas del Ej4. RESTORE no borra el historial: crea un commit nuevo (versión 4) con el mismo contenido que la versión 1.
+\end{itemize}
+
+\section*{Clase 3: capas silver y gold}
+
+\subsection*{Ej7: datos adicionales de Yahoo Finance}
+\begin{itemize}
+    \item \textbf{Función:} \code{yf.Ticker(t).info} para cada empresa, del que se guardan nombre, sector, industria, país, \code{marketCap}, \code{beta}, \code{dividendYield} y \code{recommendationMean}. Para comparar con el CSV se normaliza el sector con \code{initcap(trim(...))} y se cruzan las dos fuentes con un \textit{outer join} por sector.
+    \item \textbf{Análisis:} el CSV tiene 48 formas distintas de escribir el sector, que se quedan en 12 al quitar espacios y unificar mayúsculas. Son exactamente los mismos nombres que usa Yahoo, así que el sector es la clave que une al experto con los precios: cada cotización (\code{Ticker}, \code{Date}) se cruza con el sentimiento de su sector ese día.
+    \item \textbf{Cómo aprovechar al experto:} comparar el sentimiento de un sector con el retorno diario de sus empresas, el mismo día y con un día de retraso para ver si lo anticipa. La industria permite un análisis más fino (bancos frente a aseguradoras), el \code{marketCap} sirve para ponderar el sector por tamaño, la \code{beta} indica la sensibilidad al mercado y \code{recommendationMean} es la opinión media de los analistas, otro ``experto'' con el que contrastar. El histórico del índice \code{\textasciicircum IBEX} serviría como referencia de mercado.
+    \item \textbf{Limitaciones:} \code{info} es una foto del momento actual, no un histórico. \textit{Crypto} no tiene empresas en el IBEX. \textit{Consumer Defensive} solo tiene sentimiento desde el 7-05-2024, lo que coincide con la salida a bolsa de Puig, su única empresa. El sentimiento termina el 30-09-2026, así que los precios de octubre (Ej4) no tendrán sentimiento.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+Sector & Empresas IBEX & Días con sentimiento \\
+\midrule
+Financial Services & 7 & 1276 \\
+Industrials & 7 & 1276 \\
+Utilities & 7 & 1276 \\
+Consumer Cyclical & 3 & 1276 \\
+Real Estate & 3 & 1276 \\
+Basic Materials & 2 & 1276 \\
+Healthcare & 2 & 1276 \\
+Technology & 2 & 1276 \\
+Communication Services & 1 & 1276 \\
+Energy & 1 & 1276 \\
+Consumer Defensive & 1 & 615 \\
+Crypto & 0 & 1277 \\
+\bottomrule
+\end{tabular}
+\caption{Cruce entre los sectores de Yahoo y los del experto.}
+\end{table}
+
+\textbf{Referencias:} documentación de yfinance (\url{https://ranaroussi.github.io/yfinance/}) y Yahoo Finance (\url{https://finance.yahoo.com}).
+
+\subsection*{Ej8: silver de sentimiento}
+\begin{itemize}
+    \item \textbf{Origen y destino:} se lee \code{bronze/sentimiento} (no el CSV), porque bronze es la copia fiel del origen y silver se reconstruye siempre a partir de ella. Se escribe en \code{silver/sentimiento} en modo \code{overwrite}, para poder repetir el ejercicio sin duplicar datos.
+    \item \textbf{Defectos encontrados:} \code{Fecha} y \code{Sentimiento} llegan como texto; el sector aparece escrito de 48 formas distintas (mayúsculas, minúsculas y espacios: \code{"  ENERGY "}, \code{"energy"}\ldots); y bronze tiene 29\,304 filas por el \code{append} del Ej2c. No se han encontrado comas decimales ni celdas vacías.
+    \item \textbf{Limpieza, en este orden:}
+    \begin{enumerate}
+        \item \code{initcap(trim(Sector))}: deja los 12 sectores con un único nombre.
+        \item \code{to\_date(Fecha)}: de texto a fecha.
+        \item \code{regexp\_replace(Sentimiento, ",", ".")} y después \code{cast("double")}. El reemplazo va antes porque trabaja con texto, y un valor con coma daría nulo al convertirlo. Aunque este CSV no tiene comas, así la limpieza es robusta.
+        \item \code{dropna()}: descarta las filas con algún valor que no se haya podido convertir.
+        \item \code{dropDuplicates(["Fecha", "Sector"])}: garantiza una única nota por sector y día, que es la clave con la que se cruzará en gold.
+    \end{enumerate}
+    Primero se corrigen los valores y después se eliminan duplicados: si no, \code{"Energy"} y \code{"ENERGY"} contarían como filas distintas.
+    \item \textbf{Diferencias con el enunciado:} el enunciado indica que el CSV trae comas decimales, celdas vacías y sectores en español, pero en la versión disponible en Moodle no aparece ninguno de los tres defectos (se ha vuelto a descargar para comprobarlo). Aun así se mantienen el \code{regexp\_replace} y el \code{dropna} para que la limpieza funcione si llegan.
+    \item \textbf{Decisiones:} los sectores se mantienen en inglés porque coinciden con la clasificación de Yahoo (\code{info["sector"]}) y eso permite cruzar ambas fuentes sin traducir. El sector \textit{Crypto} se conserva aunque no tenga empresas en el IBEX: silver es la fuente limpia y descartar lo que no cruza es una decisión del análisis (gold).
+    \item \textbf{Resultado:} bronze tiene 29\,304 filas y silver 14\,652, las mismas que el CSV original. En el esquema, \code{Fecha} pasa a \code{date} y \code{Sentimiento} a \code{double}.
+\end{itemize}
+
+\subsection*{Ej9: silver de precios y dimensión empresa}
+\begin{itemize}
+    \item \textbf{Dos tablas:} los precios (una fila por empresa y día) y la ficha de cada empresa (una fila por empresa). El sector no está en los precios y es lo que permite cruzarlos con el sentimiento (Ej7), así que la información de Yahoo (\code{info}) se guarda en una dimensión aparte: \code{bronze/empresa} en crudo y \code{silver/empresa} corregida. Separarla evita repetir nombre, sector o país en cada día de cotización.
+    \item \textbf{Flujo:} en ambas tablas silver se construye leyendo bronze y se escribe en modo \code{overwrite}, igual que en el Ej8.
+    \item \textbf{Precios (\code{silver/ibex}):} los datos ya llegan tipados desde el Ej1 (\code{StructType}) y no se han encontrado nulos, duplicados ni valores anómalos. Aun así, al escribir en disco Spark marca todas las columnas como \textit{nullable}, de modo que silver garantiza por código lo que el esquema ya no garantiza:
+    \begin{enumerate}
+        \item \code{dropna(subset=[Ticker, Date, Open, High, Low, Close])}: la clave y los precios obligatorios de la sesión. \code{Volume} se excluye porque puede ser nulo legítimamente (Ej1a).
+        \item \code{dropDuplicates(["Ticker", "Date"])}: una cotización por empresa y día.
+    \end{enumerate}
+    \item \textbf{Empresas (\code{silver/empresa}):} \code{dropDuplicates(["Ticker"])} para que cada empresa aparezca una vez y \code{dropna(subset=["Sector"])}, porque sin sector no se puede unir con el sentimiento. Los únicos nulos son de \code{RecomendacionMedia} (Acciona Energía y ArcelorMittal, sin cobertura de analistas): se conservan porque significan ``no hay dato'' y borrarlos haría perder esas empresas en gold.
+    \item \textbf{Observación:} \code{DividendYield} viene en porcentaje (3{,}06 equivale a un 3{,}06\,\%), no en tanto por uno.
+    \item \textbf{Resultado:} la limpieza no elimina ninguna fila (19\,152 precios y 36 empresas en bronze y en silver), porque las fuentes ya llegan depuradas; su función es asegurar las claves para el cruce de gold.
+\end{itemize}
+
+\subsection*{Ej10: capa gold}
+\pendiente
+
+\subsection*{Ej11 (opcional): anti-join}
+\pendiente
+
+\subsection*{Ej12 (opcional): columnas calculadas}
+\pendiente
+
+\subsection*{Ej13: exportación para Power BI}
+\pendiente
+
+\end{document}
