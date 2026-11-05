@@ -21,3 +21,8 @@ SILVER_PATH_SENTIMIENTO = (LAKE_DIR / "silver" / "sentimiento").as_posix()
 BRONZE_PATH_EMPRESA = (LAKE_DIR / "bronze" / "empresa").as_posix()
 SILVER_PATH_EMPRESA = (LAKE_DIR / "silver" / "empresa").as_posix()
 SILVER_PATH_IBEX = (LAKE_DIR / "silver" / "ibex").as_posix()
+
+GOLD_PATH_HECHO = (LAKE_DIR / "gold" / "hecho_cotizacion").as_posix()
+GOLD_PATH_DIM_EMPRESA = (LAKE_DIR / "gold" / "dim_empresa").as_posix()
+GOLD_PATH_DIM_SECTOR = (LAKE_DIR / "gold" / "dim_sector").as_posix()
+GOLD_PATH_DIM_FECHA = (LAKE_DIR / "gold" / "dim_fecha").as_posix()

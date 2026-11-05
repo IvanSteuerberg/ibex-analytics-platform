@@ -4,8 +4,9 @@ from pyspark.errors import AnalysisException
 from src.models.stock_data import StockDataModel
 from src.models.sentiment_data import SentimentDataModel
 from src.models.delta_lake import DeltaLakeModel
+from src.models.gold_data import GoldDataModel
 from src.views.console_view import ConsoleView
-from src.config.paths import BRONZE_PATH_EMPRESA, BRONZE_PATH_SENTIMIENTO, BRONZE_PATH_IBEX, SILVER_PATH_EMPRESA, SILVER_PATH_IBEX, SILVER_PATH_SENTIMIENTO
+from src.config.paths import *
 
 # Clave que identifica una cotización: una empresa en un día
 CLAVE_PRECIOS = ["Ticker", "Date"]
@@ -22,6 +23,7 @@ class PracticeController:
         self.sentiment_model = SentimentDataModel(spark)
         self.lake = DeltaLakeModel(spark)
         self.view = ConsoleView()
+        self.gold_model = GoldDataModel(spark)
 
     def ejecutar_ej1a(self):
         df = self.stock_model.descargar_historico(ticker="BBVA.MC", start_date="2021-10-01", end_date="2026-10-01")
@@ -144,3 +146,24 @@ class PracticeController:
         # Mostrar filas
         self.view.mostrar_dataframe(df_ibex_silver, truncar=True)
         self.view.mostrar_dataframe(df_empresa_silver, truncar=True)
+
+    def ejecutar_ej10(self):
+        df_ibex = self.lake.leer_delta(SILVER_PATH_IBEX)
+        df_empresa = self.lake.leer_delta(SILVER_PATH_EMPRESA)
+        df_sentimiento = self.lake.leer_delta(SILVER_PATH_SENTIMIENTO)
+
+        hecho = self.gold_model.construir_hecho(df_ibex, df_empresa, df_sentimiento)
+        dim_empresa = self.gold_model.construir_dim_empresa(df_empresa)
+        dim_sector = self.gold_model.construir_dim_sector(df_empresa)
+        dim_fecha = self.gold_model.construir_dim_fecha(df_ibex)
+
+        self.lake.escribir_delta(hecho, GOLD_PATH_HECHO, "overwrite")
+        self.lake.escribir_delta(dim_empresa, GOLD_PATH_DIM_EMPRESA, "overwrite")
+        self.lake.escribir_delta(dim_sector, GOLD_PATH_DIM_SECTOR, "overwrite")
+        self.lake.escribir_delta(dim_fecha, GOLD_PATH_DIM_FECHA, "overwrite")
+
+        self.view.mostrar_esquema(hecho)
+        self.view.mostrar_dataframe(hecho, truncar=True)
+        filas_silver = self.lake.contar_filas(SILVER_PATH_IBEX)
+        filas_hecho = self.lake.contar_filas(GOLD_PATH_HECHO)
+        self.view.mostrar_antes_despues(filas_silver, filas_hecho)

@@ -71,13 +71,17 @@ def main():
     # print("Ej7")
     # controller.ejecutar_ej7()
 
-    # Ej8
+    # # Ej8
     # print("Ej8")
     # controller.ejecutar_ej8()
 
-    # Ej9
-    print("Ej9")
-    controller.ejecutar_ej9()
+    # # Ej9
+    # print("Ej9")
+    # controller.ejecutar_ej9()
+
+    # Ej 10
+    print("Ej10")
+    controller.ejecutar_ej10()
 
     # Finalizar la sesión de Spark
     spark.stop()

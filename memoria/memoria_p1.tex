@@ -198,7 +198,15 @@ Crypto & 0 & 1277 \\
 \end{itemize}
 
 \subsection*{Ej10: capa gold}
-\pendiente
+\begin{itemize}
+    \item \textbf{Modelo en estrella:} gold se organiza por las preguntas que se van a hacer, no por el origen de los datos. Se guarda como cuatro tablas Delta independientes en \code{data/lake/gold}: una tabla de hechos (\code{hecho\_cotizacion}) y tres dimensiones (\code{dim\_empresa}, \code{dim\_sector} y \code{dim\_fecha}), unidas por las claves \code{Ticker}, \code{Sector} y \code{Date}.
+    \item \textbf{Hecho:} cada fila es una cotización (una empresa en un día), con las medidas que se suman o promedian (\code{Open}, \code{High}, \code{Low}, \code{Close}, \code{Adj\_Close}, \code{Volume}, \code{Dividends}, \code{Stock\_Splits}, \code{Sentimiento}) y las tres claves. No repite nombre, industria ni país, porque esos atributos sirven para filtrar y agrupar y van en las dimensiones.
+    \item \textbf{Dimensiones:} \code{dim\_empresa} es \code{silver/empresa} (una fila por \code{Ticker}); \code{dim\_sector} contiene los sectores distintos de las empresas; \code{dim\_fecha} contiene las fechas distintas de los precios.
+    \item \textbf{Función:} el hecho se construye con dos \code{join} \code{left} desde \code{silver/ibex}. Primero se une \code{Ticker} con \code{silver/empresa} para obtener el sector (los precios no lo traen) y después \code{(Sector, Date)} con \code{silver/sentimiento}, renombrando \code{Fecha} a \code{Date} para poder unir por nombre de columna. Cada tabla se escribe con \code{write.format("delta")} y \code{mode("overwrite")}, y la lógica está en funciones reutilizables del modelo \code{GoldDataModel}, no en el ejercicio.
+    \item \textbf{Por qué \code{left} y no \code{inner}:} el \code{left} parte de los precios y conserva todas las cotizaciones aunque un día no tenga sentimiento (el campo queda a nulo). Un \code{inner} las descartaría sin avisar y se perdería información de mercado, que es la tabla principal. Los huecos quedan visibles y se analizan en el Ej11.
+    \item \textbf{Por qué no se duplican filas:} el sentimiento es único por \code{(Sector, Fecha)} (Ej8) y la ficha de empresa es única por \code{Ticker} (Ej9), así que ningún join multiplica filas.
+    \item \textbf{Resultado:} el hecho tiene 18\,360 filas (36 empresas $\times$ 510 sesiones), las mismas que \code{silver/ibex}, lo que confirma que el cruce ni duplica ni pierde cotizaciones. \code{dim\_empresa} tiene 36 filas, \code{dim\_sector} 11 y \code{dim\_fecha} 510 (del 1-10-2024 al 30-09-2026). Ninguna cotización tiene \code{Sentimiento} nulo: el sentimiento cubre todos los días y sectores de los precios. \textit{Crypto} no aparece en \code{dim\_sector} porque ninguna empresa del IBEX pertenece a él (Ej7).
+\end{itemize}
 
 \subsection*{Ej11 (opcional): anti-join}
 \pendiente
