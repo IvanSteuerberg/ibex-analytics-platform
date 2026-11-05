@@ -26,3 +26,9 @@ GOLD_PATH_HECHO = (LAKE_DIR / "gold" / "hecho_cotizacion").as_posix()
 GOLD_PATH_DIM_EMPRESA = (LAKE_DIR / "gold" / "dim_empresa").as_posix()
 GOLD_PATH_DIM_SECTOR = (LAKE_DIR / "gold" / "dim_sector").as_posix()
 GOLD_PATH_DIM_FECHA = (LAKE_DIR / "gold" / "dim_fecha").as_posix()
+
+EXPORT_DIR = DATA_DIR / "export" / "gold"
+EXPORT_PATH_HECHO = (EXPORT_DIR / "hecho_cotizacion").as_posix()
+EXPORT_PATH_DIM_EMPRESA = (EXPORT_DIR / "dim_empresa").as_posix()
+EXPORT_PATH_DIM_SECTOR = (EXPORT_DIR / "dim_sector").as_posix()
+EXPORT_PATH_DIM_FECHA = (EXPORT_DIR / "dim_fecha").as_posix()

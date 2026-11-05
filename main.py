@@ -80,8 +80,23 @@ def main():
     # controller.ejecutar_ej9()
 
     # Ej 10
-    print("Ej10")
-    controller.ejecutar_ej10()
+    # print("Ej10")
+    # controller.ejecutar_ej10()
+
+
+    # Ej 11
+    print("Ej11")
+    controller.ejecutar_ej11()
+
+
+    # Ej 12
+    print("Ej12")
+    controller.ejecutar_ej12()
+
+
+    # Ej 13
+    # print("Ej13")
+    # controller.ejecutar_ej13()
 
     # Finalizar la sesión de Spark
     spark.stop()

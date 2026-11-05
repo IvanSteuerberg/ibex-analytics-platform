@@ -121,3 +121,7 @@ class ConsoleView:
               "sentimiento acaba el 30-09-2026, así que los precios de octubre no tendrán sentimiento.")
         print("Referencias: documentación de yfinance (https://ranaroussi.github.io/yfinance/) y Yahoo Finance "
               "(https://finance.yahoo.com).")
+
+    @staticmethod
+    def mostrar_resumen_anti(filas):
+        print(filas)

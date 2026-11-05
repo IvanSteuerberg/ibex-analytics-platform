@@ -209,12 +209,21 @@ Crypto & 0 & 1277 \\
 \end{itemize}
 
 \subsection*{Ej11 (opcional): anti-join}
-\pendiente
+\begin{itemize}
+    \item \textbf{Función:} \code{join(..., how="left\_anti")} por \code{(Sector, Date)}, dos veces: precios frente a sentimiento y sentimiento frente a los pares únicos \code{(Sector, Date)} de los precios. El anti-join devuelve las filas de la izquierda que no tienen pareja en la derecha.
+    \item \textbf{(a) Precios sin sentimiento:} 900 cotizaciones (25 sesiones $\times$ 36 empresas, del 1-10-2026 al 4-11-2026), porque el CSV termina el 30-09-2026. No se inventa el valor: se conserva el \code{left join} del Ej10 y quedan con \code{Sentimiento} nulo. La solución sería tener el CSV actualizado y repetir la carga.
+    \item \textbf{(b) Sentimiento sin precios:} 9\,042 filas. \textit{Crypto} (1\,277) no tiene empresas en el IBEX; \textit{Consumer Defensive} (105, del 7-5-2024 al 30-9-2024) y los otros diez sectores (766 cada uno, del 5-10-2021 al 30-9-2024) son fechas anteriores al 1-10-2024, donde empieza la descarga de precios. Todo el sentimiento posterior cruza con precios. No requiere corrección: gold se construye desde los precios, así que estas filas se descartan solas, y se conservan en silver por si se amplía el histórico.
+\end{itemize}
 
 \subsection*{Ej12 (opcional): columnas calculadas}
-\pendiente
+\begin{itemize}
+    \item \textbf{Función:} \code{withColumn} sobre el hecho y escritura en Delta con \code{overwrite} y \code{mergeSchema}, porque la tabla ya existe y las columnas son nuevas (como en el Ej5b).
+    \item \textbf{Columnas:} \code{Rango\_Dia} ($High - Low$, volatilidad del día) y \code{Variacion\_Intradia\_Pct} ($(Close - Open)/Open \cdot 100$, variación de apertura a cierre).
+    \item \textbf{Por qué:} son medidas calculables fila a fila, así que van en el hecho y Power BI las agrega por empresa, sector o fecha sin recalcularlas. Sirven para comparar la volatilidad con el sentimiento del sector.
+    \item \textbf{Resultado:} el hecho pasa de 12 a 14 columnas y mantiene sus 19\,260 filas. Por ejemplo, el 15-09-2026 AENA tuvo un rango de 1,04 \texteuro{} y una variación intradía del 1,46\,\%.
+\end{itemize}
 
 \subsection*{Ej13: exportación para Power BI}
-\pendiente
+Se exporta la capa gold a \code{data/export/gold} como cuatro carpetas Parquet independientes, una por tabla del modelo en estrella (\code{hecho\_cotizacion}, \code{dim\_empresa}, \code{dim\_sector} y \code{dim\_fecha}), en lugar de una única tabla plana. Así no se repiten nombre, industria o país en cada cotización. Se escribe además en Parquet plano a partir del dataframe, sin copiar el delta log ya que no es necesario para PowerBI. Las fechas se mantienen en tipo fecha y los valores de \code{Sentimiento} sin dato se dejan nulos.
 
 \end{document}
