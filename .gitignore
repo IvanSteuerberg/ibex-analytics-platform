@@ -55,6 +55,7 @@ spark-events/
 data/lake/bronze/
 data/lake/silver/
 data/lake/gold/
+data/export/
 # _delta_log/
 
 # --- Bases de Datos y Almacenamiento Local ---

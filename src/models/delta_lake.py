@@ -32,11 +32,14 @@ class DeltaLakeModel:
     def contar_filas(self, ruta: str) -> int:
         return self.leer_delta(ruta).count()
 
-    def escribir_delta(self, df: DataFrame, ruta: str, modo: str = "append", merge_schema: bool = False):
-        """Escribe en Delta. Con merge_schema=True permite añadir columnas nuevas (schema evolution)."""
+    def escribir_delta(self, df: DataFrame, ruta: str, modo: str = "append", merge_schema: bool = False, overwrite_schema: bool = False):
+        """Escribe en Delta. Con merge_schema=True permite añadir columnas nuevas (schema evolution).
+        Con overwrite_schema=True permite reescribir el esquema (schema overwrite)."""
         escritor = df.write.format("delta").mode(modo)
         if merge_schema:
             escritor = escritor.option("mergeSchema", "true")
+        elif overwrite_schema:
+            escritor = escritor.option("overwriteSchema", "true")
         escritor.save(ruta)
 
     def merge_insertar_nuevos(self, nuevos: DataFrame, ruta: str, claves: list):

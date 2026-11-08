@@ -1,13 +1,17 @@
 from datetime import date
 from pyspark.sql import SparkSession
 from pyspark.errors import AnalysisException
-from pyspark.sql import functions as F
 from src.models.stock_data import StockDataModel
 from src.models.sentiment_data import SentimentDataModel
 from src.models.delta_lake import DeltaLakeModel
 from src.models.gold_data import GoldDataModel
 from src.views.console_view import ConsoleView
-from src.config.paths import *
+from src.config.paths import (
+    BRONZE_PATH_EMPRESA, BRONZE_PATH_IBEX, BRONZE_PATH_SENTIMIENTO,
+    SILVER_PATH_EMPRESA, SILVER_PATH_IBEX, SILVER_PATH_SENTIMIENTO,
+    GOLD_PATH_HECHO, GOLD_PATH_DIM_EMPRESA, GOLD_PATH_DIM_SECTOR, GOLD_PATH_DIM_FECHA,
+    EXPORT_PATH_HECHO, EXPORT_PATH_DIM_EMPRESA, EXPORT_PATH_DIM_SECTOR, EXPORT_PATH_DIM_FECHA,
+)
 
 # Clave que identifica una cotización: una empresa en un día
 CLAVE_PRECIOS = ["Ticker", "Date"]
@@ -158,16 +162,12 @@ class PracticeController:
         dim_sector = self.gold_model.construir_dim_sector(df_empresa)
         dim_fecha = self.gold_model.construir_dim_fecha(df_ibex)
 
-        self.lake.escribir_delta(hecho, GOLD_PATH_HECHO, "overwrite")
+        self.lake.escribir_delta(hecho, GOLD_PATH_HECHO, "overwrite", overwrite_schema=True)
         self.lake.escribir_delta(dim_empresa, GOLD_PATH_DIM_EMPRESA, "overwrite")
         self.lake.escribir_delta(dim_sector, GOLD_PATH_DIM_SECTOR, "overwrite")
-        self.lake.escribir_delta(dim_fecha, GOLD_PATH_DIM_FECHA, "overwrite")
+        self.lake.escribir_delta(dim_fecha, GOLD_PATH_DIM_FECHA, "overwrite", overwrite_schema=True)
 
-        self.view.mostrar_esquema(hecho)
-        self.view.mostrar_dataframe(hecho, truncar=True)
-        filas_silver = self.lake.contar_filas(SILVER_PATH_IBEX)
-        filas_hecho = self.lake.contar_filas(GOLD_PATH_HECHO)
-        self.view.mostrar_antes_despues(filas_silver, filas_hecho)
+        self.view.mostrar_dataframe(self.lake.leer_delta(GOLD_PATH_HECHO), truncar=True)
 
     def ejecutar_ej11(self):
         df_ibex = self.lake.leer_delta(SILVER_PATH_IBEX)
@@ -176,15 +176,13 @@ class PracticeController:
 
         # a) Precio sin sentimiento
         sin_sentimiento = self.gold_model.precios_sin_sentimiento(df_ibex, df_empresa, df_sentimiento)
-        self.view.mostrar_dataframe(sin_sentimiento.groupBy("Date").count().orderBy("Date"), num_filas=40)
+        self.view.mostrar_dataframe(self.gold_model.resumir_por_fecha(sin_sentimiento), num_filas=40)
         self.view.mostrar_resumen_anti(sin_sentimiento.count())
 
         # b) Sentimiento sin precio por sector
         sin_precio = self.gold_model.sentimiento_sin_precios(df_ibex, df_empresa, df_sentimiento)
-        resumen = (sin_precio.groupBy("Sector")
-                   .agg(F.count("*").alias("Filas"), F.min("Date").alias("Desde"), F.max("Date").alias("Hasta")).orderBy("Sector"))
-
-        self.view.mostrar_dataframe(resumen, num_filas=15)
+        self.view.mostrar_dataframe(self.gold_model.resumir_por_sector(sin_precio), num_filas=15)
+        self.view.mostrar_justificacion_anti_join()
 
 
     def ejecutar_ej12(self):
@@ -192,7 +190,7 @@ class PracticeController:
         hecho = self.gold_model.anadir_metricas(hecho)
         self.lake.escribir_delta(hecho, GOLD_PATH_HECHO, "overwrite", merge_schema=True)
         self.view.mostrar_esquema(hecho)
-        self.view.mostrar_dataframe(hecho.select("Ticker", "Date", "Close", "Rango_Dia", "Variacion_Intradia_Pct"))
+        self.view.mostrar_dataframe(hecho.select("Ticker", "Date", "Close", "Rango_Dia_Pct", "Variacion_Intradia_Pct", "Retorno_Diario_Pct"))
 
     def ejecutar_ej13(self):
         tablas = {
@@ -203,8 +201,6 @@ class PracticeController:
         }
 
         for origen, destino in tablas.items():
-            df = self.lake.leer_delta(origen)
-            self.lake.escribir_parquet(df, destino)
-
-            export = self.lake.leer_parquet(destino)
-            self.view.mostrar_antes_despues(df.count(), export.count())
+            self.lake.escribir_parquet(self.lake.leer_delta(origen), destino)
+            tabla = destino.rsplit("/", 1)[-1]
+            self.view.mostrar_filas_exportadas(tabla, self.lake.leer_parquet(destino).count())

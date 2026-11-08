@@ -42,6 +42,10 @@ class ConsoleView:
         print(f"Filas bronze: {filas_bronze} | Filas silver: {filas_silver}")
 
     @staticmethod
+    def mostrar_filas_exportadas(tabla: str, filas: int):
+        print(f"{tabla}: {filas} filas exportadas")
+
+    @staticmethod
     def mostrar_comparacion_versiones(filas_actual: int, filas_antigua: int, version_antigua: int):
         print(f"Filas actual: {filas_actual} | Filas versión {version_antigua}: {filas_antigua}")
 
@@ -123,5 +127,14 @@ class ConsoleView:
               "(https://finance.yahoo.com).")
 
     @staticmethod
-    def mostrar_resumen_anti(filas):
-        print(filas)
+    def mostrar_resumen_anti(filas: int):
+        print(f"Precios sin sentimiento: {filas}")
+
+    @staticmethod
+    def mostrar_justificacion_anti_join():
+        print("(a) Los precios sin sentimiento son los días posteriores al 30-09-2026, cuando acaba el CSV del "
+              "experto. Se conservan en gold con Sentimiento nulo (left join), sin inventar el valor; la solución "
+              "es actualizar el CSV y repetir la carga.")
+        print("(b) El sentimiento sin precios es Crypto, que no tiene empresas en el IBEX, y las fechas anteriores "
+              "al 01-10-2024, donde empieza la descarga de precios. No hace falta corregirlo: gold parte de los "
+              "precios y esas filas se quedan en silver por si se amplía el histórico.")
