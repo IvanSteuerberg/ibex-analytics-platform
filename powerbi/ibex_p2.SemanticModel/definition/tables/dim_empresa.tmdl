@@ -1,0 +1,102 @@
+table dim_empresa
+	lineageTag: 47299ec2-3b8c-4973-9c65-752672123e33
+
+	column Ticker
+		dataType: string
+		lineageTag: de2f1cea-effa-419d-8bc6-209c65d9c142
+		summarizeBy: none
+		sourceColumn: Ticker
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre
+		dataType: string
+		lineageTag: 8414b9e3-d6cc-4509-b886-0ab3110d64b9
+		summarizeBy: none
+		sourceColumn: Nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sector
+		dataType: string
+		lineageTag: f6fb5bed-23ff-40e2-9bba-68f404172fb9
+		summarizeBy: none
+		sourceColumn: Sector
+
+		annotation SummarizationSetBy = Automatic
+
+	column Industria
+		dataType: string
+		lineageTag: 4df0168c-72c2-485c-9cf5-cfdd1e1dd2c1
+		summarizeBy: none
+		sourceColumn: Industria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Pais
+		dataType: string
+		lineageTag: f1e708a6-3365-48a6-8550-7f36f4adc8c5
+		summarizeBy: none
+		sourceColumn: Pais
+
+		annotation SummarizationSetBy = Automatic
+
+	column MarketCap
+		dataType: int64
+		formatString: 0
+		lineageTag: b9b038b8-77e3-409d-803b-9fd99b7f7833
+		summarizeBy: none
+		sourceColumn: MarketCap
+
+		annotation SummarizationSetBy = Automatic
+
+	column Beta
+		dataType: double
+		lineageTag: 57002987-b16f-48e7-a156-4a976a8075cf
+		summarizeBy: none
+		sourceColumn: Beta
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column DividendYield
+		dataType: double
+		lineageTag: 61a36c30-438f-491d-8c6f-366b04da81d2
+		summarizeBy: none
+		sourceColumn: DividendYield
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RecomendacionMedia
+		dataType: double
+		lineageTag: d76a31b3-b2f3-4148-bd40-4d839f6490dc
+		summarizeBy: none
+		sourceColumn: RecomendacionMedia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dim_empresa = m
+		mode: import
+		source =
+				let
+				    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_empresa"),
+				    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+				    #"Archivos ocultos filtrados1" = Table.SelectRows(#"Filas filtradas", each [Attributes]?[Hidden]? <> true),
+				    #"Invocar función personalizada1" = Table.AddColumn(#"Archivos ocultos filtrados1", "Transformar archivo", each #"Transformar archivo"([Content])),
+				    #"Columnas con nombre cambiado1" = Table.RenameColumns(#"Invocar función personalizada1", {"Name", "Source.Name"}),
+				    #"Otras columnas quitadas1" = Table.SelectColumns(#"Columnas con nombre cambiado1", {"Source.Name", "Transformar archivo"}),
+				    #"Columna de tabla expandida1" = Table.ExpandTableColumn(#"Otras columnas quitadas1", "Transformar archivo", Table.ColumnNames(#"Transformar archivo"(#"Archivo de ejemplo"))),
+				    #"Tipo cambiado" = Table.TransformColumnTypes(#"Columna de tabla expandida1",{{"Source.Name", type text}, {"Ticker", type text}, {"Nombre", type text}, {"Sector", type text}, {"Industria", type text}, {"Pais", type text}, {"MarketCap", Int64.Type}, {"Beta", type number}, {"DividendYield", type number}, {"RecomendacionMedia", type number}}),
+				    #"Columnas quitadas" = Table.RemoveColumns(#"Tipo cambiado",{"Source.Name"})
+				in
+				    #"Columnas quitadas"
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,180 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "af28ab0b729dd2d07361",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "height": 150,
+    "width": 1920,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Empresas"
+                }
+              },
+              "queryRef": "dim_empresa.Empresas",
+              "nativeQueryRef": "Empresas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Retorno medio %"
+                }
+              },
+              "queryRef": "dim_empresa.Retorno medio %",
+              "nativeQueryRef": "Retorno medio %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Sentimiento medio"
+                }
+              },
+              "queryRef": "dim_empresa.Sentimiento medio",
+              "nativeQueryRef": "Sentimiento medio"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Sesiones"
+                }
+              },
+              "queryRef": "dim_empresa.Sesiones",
+              "nativeQueryRef": "Sesiones"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "hechos"
+                  }
+                },
+                "Property": "Empresas"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "shapeCustomRectangle": [
+        {
+          "properties": {
+            "tileShape": {
+              "expr": {
+                "Literal": {
+                  "Value": "'rectangleRoundedByPixel'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
+      "value": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "28D"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
+      "label": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "20D"
+                }
+              }
+            },
+            "position": {
+              "expr": {
+                "Literal": {
+                  "Value": "'belowValue'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "dd7015b84149901eaa8a",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "hechos"
+              }
+            },
+            "Property": "Empresas"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

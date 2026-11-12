@@ -1,0 +1,184 @@
+table hechos
+	lineageTag: 4756b6ec-b92a-4149-9d3a-abb4f692edc8
+
+	measure Empresas = DISTINCTCOUNT(hechos[Ticker])
+		formatString: 0
+		lineageTag: e5774aba-524f-40f1-9160-20ee51841bad
+
+	measure 'Retorno medio %' = AVERAGE(hechos[Retorno_Diario_Pct])
+		formatString: 0.00
+		lineageTag: 13947d29-1975-4245-aa83-5638508dea23
+
+	measure 'Sentimiento medio' = AVERAGE(hechos[Sentimiento])
+		formatString: 0.00
+		lineageTag: 08503587-5e94-4652-8459-975b3128b8fe
+
+	measure Sesiones = DISTINCTCOUNT(hechos[Date])
+		formatString: 0
+		lineageTag: 908e0618-379d-4aea-8748-341039503535
+
+	column Sector
+		dataType: string
+		lineageTag: de7bcd05-c5f1-4d9a-a067-01ef54d93f23
+		summarizeBy: none
+		sourceColumn: Sector
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 243ab0fe-03a0-4081-bfdc-2d207f87a606
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ticker
+		dataType: string
+		lineageTag: fc3e98e4-8231-499d-9ca2-d569676bcdd6
+		summarizeBy: none
+		sourceColumn: Ticker
+
+		annotation SummarizationSetBy = Automatic
+
+	column Open
+		dataType: double
+		lineageTag: 0c34e353-2a2d-40e1-bb0c-6e1fb638357c
+		summarizeBy: sum
+		sourceColumn: Open
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column High
+		dataType: double
+		lineageTag: 8dda1d6e-2edb-4401-8c2b-8947f0dbe2f0
+		summarizeBy: sum
+		sourceColumn: High
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Low
+		dataType: double
+		lineageTag: a4f028d6-8059-440c-9b4a-65a62c2aee68
+		summarizeBy: sum
+		sourceColumn: Low
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Close
+		dataType: double
+		lineageTag: 9c7e6a0f-7453-4401-850f-c532334c22ba
+		summarizeBy: average
+		sourceColumn: Close
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Adj_Close
+		dataType: double
+		lineageTag: ca57f8df-eba1-495d-acf7-828a5978ee8a
+		summarizeBy: sum
+		sourceColumn: Adj_Close
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Volume
+		dataType: int64
+		formatString: 0
+		lineageTag: e6bc8755-818e-4688-9d07-febd7a2edaab
+		summarizeBy: sum
+		sourceColumn: Volume
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dividends
+		dataType: double
+		lineageTag: 93664e31-c83f-494b-8299-ce517e00e381
+		summarizeBy: sum
+		sourceColumn: Dividends
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Stock_Splits
+		dataType: double
+		formatString: 0
+		lineageTag: 97fedadf-44b0-40bf-bf65-a7350c20b395
+		summarizeBy: sum
+		sourceColumn: Stock_Splits
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sentimiento
+		dataType: double
+		lineageTag: 88e98aac-eab6-4ae9-89c8-ca10a661c65e
+		summarizeBy: sum
+		sourceColumn: Sentimiento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Rango_Dia_Pct
+		dataType: double
+		lineageTag: e3854549-fe6d-48a0-8da5-a47edfadf0f4
+		summarizeBy: sum
+		sourceColumn: Rango_Dia_Pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Variacion_Intradia_Pct
+		dataType: double
+		lineageTag: b7ca35d7-d3b1-455d-b431-e8d5ada4b680
+		summarizeBy: sum
+		sourceColumn: Variacion_Intradia_Pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Retorno_Diario_Pct
+		dataType: double
+		lineageTag: 1946c57a-93e5-439d-9e47-763c799ba84a
+		summarizeBy: sum
+		sourceColumn: Retorno_Diario_Pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition hechos = m
+		mode: import
+		source =
+				let
+				    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\hecho_cotizacion"),
+				    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+				    #"Archivos ocultos filtrados1" = Table.SelectRows(#"Filas filtradas", each [Attributes]?[Hidden]? <> true),
+				    #"Invocar función personalizada1" = Table.AddColumn(#"Archivos ocultos filtrados1", "Transformar archivo (4)", each #"Transformar archivo (4)"([Content])),
+				    #"Columnas con nombre cambiado1" = Table.RenameColumns(#"Invocar función personalizada1", {"Name", "Source.Name"}),
+				    #"Otras columnas quitadas1" = Table.SelectColumns(#"Columnas con nombre cambiado1", {"Source.Name", "Transformar archivo (4)"}),
+				    #"Columna de tabla expandida1" = Table.ExpandTableColumn(#"Otras columnas quitadas1", "Transformar archivo (4)", Table.ColumnNames(#"Transformar archivo (4)"(#"Archivo de ejemplo (4)"))),
+				    #"Tipo cambiado" = Table.TransformColumnTypes(#"Columna de tabla expandida1",{{"Source.Name", type text}, {"Sector", type text}, {"Date", type date}, {"Ticker", type text}, {"Open", type number}, {"High", type number}, {"Low", type number}, {"Close", type number}, {"Adj_Close", type number}, {"Volume", Int64.Type}, {"Dividends", type number}, {"Stock_Splits", type number}, {"Sentimiento", type number}, {"Rango_Dia_Pct", type number}, {"Variacion_Intradia_Pct", type number}, {"Retorno_Diario_Pct", type number}}),
+				    #"Columnas quitadas" = Table.RemoveColumns(#"Tipo cambiado",{"Source.Name"})
+				in
+				    #"Columnas quitadas"
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,124 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla,es-noshorthands]{babel} % noshorthands: que " no se convierta en diéresis
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float} % [H]: la figura va justo donde se escribe
+\usepackage[hidelinks]{hyperref}
+
+\setlist{nosep}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em} % evita que el código largo se salga del margen
+
+% Código en línea: \code{Folder.Files}. Los guiones bajos se escriben \_
+\newcommand{\code}[1]{\texttt{#1}}
+% Hueco para lo que falta por escribir
+\newcommand{\pendiente}{\textit{Pendiente.}}
+
+\title{Práctica 2: Visualización y análisis de datos con Power BI\\
+\large Decisiones tomadas en cada ejercicio}
+\author{Grupo 4: Iván y Álvaro}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Preparación de la gold}
+Antes de conectar Power BI se han hecho dos cambios en la exportación de la Práctica 1:
+\begin{itemize}
+    \item \textbf{\code{coalesce(1)}:} cada tabla se exporta en un único fichero \code{.parquet}, así Power BI combina un solo fichero por tabla. Concentrar los datos en una partición sería un cuello de botella con volúmenes grandes, pero la gold ocupa alrededor de 1\,MB.
+    \item \textbf{\code{Dia\_Semana\_Num} en \code{dim\_fecha}} (1 = lunes \ldots{} 5 = viernes): Power BI ordena el texto alfabéticamente (\textit{Friday}, \textit{Monday}\ldots), y esta columna permite ordenar \code{Dia\_Semana} con \textit{Ordenar por columna}.
+\end{itemize}
+
+\subsection*{Ej1: conectar e importar}
+\begin{itemize}
+    \item \textbf{Función:} conector \textit{Carpeta}, una vez por tabla (\code{hecho\_cotizacion}, \code{dim\_empresa}, \code{dim\_sector} y \code{dim\_fecha}), abriendo \textit{Transformar datos} para preparar cada consulta en Power Query.
+    \item \textbf{Pasos en cada consulta:}
+    \begin{enumerate}
+        \item Filtro en \code{Extension} para quedarse solo con \code{.parquet}: Spark escribe además \code{\_SUCCESS} y ficheros \code{.crc}, que no son datos.
+        \item \textit{Combinar archivos} sobre \code{Content}, que lee el Parquet y lo convierte en tabla.
+        \item Quitar \code{Source.Name}, el nombre del fichero de origen, que no aporta nada.
+        \item Revisar tipos: \code{Date} como fecha, \code{Volume}, \code{MarketCap}, \code{Anio}, \code{Mes}, \code{Trimestre} y \code{Dia\_Semana\_Num} como enteros, los precios, porcentajes y \code{Stock\_Splits} como decimales y el resto como texto.
+        \item Renombrar la consulta: \code{hechos}, \code{dim\_empresa}, \code{dim\_sector} y \code{dim\_fecha}.
+    \end{enumerate}
+    \item \textbf{Resultado:} cuatro tablas en modo \textit{Import} (Power BI copia los datos a su modelo en memoria): \code{hechos} con 19\,152 filas, \code{dim\_empresa} con 36, \code{dim\_sector} con 11 y \code{dim\_fecha} con 532.
+\end{itemize}
+
+\subsection*{Ej2: modelo en estrella}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/modelo_estrella.png}
+    \caption{Modelo en estrella en la vista Modelo de Power BI.}
+\end{figure}
+\begin{itemize}
+    \item \textbf{Relaciones:} tres, todas desde \code{hechos}: \code{Ticker} con \code{dim\_empresa}, \code{Date} con \code{dim\_fecha} y \code{Sector} con \code{dim\_sector}. Son de varios a uno (\code{*:1}), porque cada empresa, fecha o sector aparece muchas veces en el hecho y una sola vez en su dimensión, y el filtro va en una sola dirección, de la dimensión al hecho.
+    \item \textbf{Ajustes:} Power BI detectó también \code{dim\_empresa} $\rightarrow$ \code{dim\_sector}, encadenando dimensiones (copo de nieve) y dejando inactiva la relación directa del hecho con el sector; se borró y se activó la directa. Además se desactivó \textit{Fecha/hora automática}, que crea tablas de fechas ocultas propias, para que el calendario sea \code{dim\_fecha}.
+    \item \textbf{Por qué es una estrella:} la tabla de hechos queda en el centro y cada dimensión se une directamente a ella por su clave, sin dimensiones intermedias.
+    \item \textbf{Qué permite:} un filtro sobre cualquier dimensión (una empresa, un sector, un trimestre o un día de la semana) se propaga al hecho y todas las medidas se recalculan a la vez. Los atributos descriptivos no se repiten en cada una de las 19\,152 cotizaciones, y cada consulta recorre una sola relación, lo que hace el modelo sencillo y rápido.
+\end{itemize}
+
+\subsection*{Ej3: panorama}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{img/ej3_tarjeta.png}
+    \caption{Tarjeta con las cuatro medidas del panorama.}
+\end{figure}
+\begin{itemize}
+    \item \textbf{Gráfico:} un visual \textit{Tarjeta} con cuatro medidas en fila en la parte superior de la página. Una tarjeta destaca un único número que se lee de un vistazo, y es la cabecera natural del dashboard: da el contexto antes de entrar en los gráficos.
+    \item \textbf{Medidas} (DAX, creadas en \code{hechos}):
+    \begin{itemize}
+        \item \code{Empresas = DISTINCTCOUNT(hechos[Ticker])}: empresas distintas; \code{COUNT} contaría filas (19\,152).
+        \item \code{Sesiones = DISTINCTCOUNT(hechos[Date])}: días de cotización distintos.
+        \item \code{Retorno medio \% = AVERAGE(hechos[Retorno\_Diario\_Pct])}: media del retorno diario.
+        \item \code{Sentimiento medio = AVERAGE(hechos[Sentimiento])}: media del sentimiento del sector.
+    \end{itemize}
+    Se usan medidas explícitas en lugar de arrastrar las columnas porque las columnas numéricas se resumen por \textit{Suma} por defecto (la suma de los retornos no tiene sentido), y porque se definen una vez con su nombre y formato y se reutilizan en los ejercicios siguientes. \code{AVERAGE} ignora los nulos: el primer retorno de cada empresa y los días sin sentimiento.
+    \item \textbf{Resultado:} 36 empresas, 532 sesiones, retorno medio de 0,10\,\% diario y sentimiento medio de 50,39. Los valores coinciden con los calculados en Spark sobre la misma gold.
+    \item \textbf{Análisis:} el retorno medio diario es pequeño pero positivo, lo que en dos años supone una tendencia alcista del conjunto. El sentimiento medio queda prácticamente en el punto neutro (50). Como son medidas, se recalculan con los filtros que les lleguen; en el Ej4 se evita que el segmentador de empresa filtre la tarjeta para que siga mostrando el conjunto del IBEX.
+\end{itemize}
+
+\subsection*{Ej4: evolución del precio}
+\begin{itemize}
+    \item \textbf{Gráfico:} de líneas, porque muestra cómo evoluciona una magnitud a lo largo del tiempo y deja ver la tendencia, el ritmo del cambio y los puntos de giro.
+    \item \textbf{Datos:} eje X \code{dim\_fecha[Date]} y eje Y \code{hechos[Close]} agregado como \textit{Promedio}. La fecha se toma de la dimensión para que el filtro viaje por la relación del modelo. Como se desactivó la fecha automática, el eje es continuo y sin jerarquía año/trimestre/mes.
+    \item \textbf{Segmentador:} \code{dim\_empresa[Ticker]} en formato desplegable y con selección única. Con varias empresas (o ninguna, que equivale a todas) cada punto sería la media de precios de acciones muy distintas, una cifra que no es el precio de ninguna y que dominaría la más cara. Con selección única la línea es siempre el precio de cierre de una empresa.
+    \item \textbf{Interacciones:} con \textit{Editar interacciones} el segmentador filtra solo el gráfico y no la tarjeta del Ej3, que mantiene el panorama del IBEX completo; con una empresa fija, \textit{Empresas} valdría siempre 1.
+    \item \textbf{Línea de tendencia} (pestaña \textit{Análisis}): recta de regresión del precio frente al tiempo, que resume hacia dónde va la serie por encima del ruido diario.
+\end{itemize}
+
+\textbf{Análisis.} Se comentan tres empresas con comportamientos distintos, elegidas calculando en Spark la variación del cierre entre el 01-10-2024 y el 30-10-2026:
+\begin{itemize}
+    \item \textbf{Indra (\code{IDR.MC}), alcista:} pasa de 16,48\,€ a 63,88\,€ (+287,6\,\%), la mayor subida del índice. Tras unos meses planos, el salto empieza a finales de febrero de 2025 y la subida se mantiene, con correcciones, hasta máximos cerca de 65\,€. La serie se ajusta bien a la línea de tendencia.
+    \item \textbf{Telefónica (\code{TEF.MC}), bajista:} pasa de 4,39\,€ a 3,37\,€ ($-$23,2\,\%), la mayor caída. Llega a un máximo de 4,89\,€ en septiembre de 2025, pero entre octubre y noviembre de 2025 cae de golpe de unos 4,6\,€ a menos de 3,7\,€ y no vuelve a acercarse a esos niveles.
+    \item \textbf{Merlin (\code{MRL.MC}), lateral:} pasa de 11,35\,€ a 11,47\,€ (+1,1\,\%), pero entre medias sube de 8,61\,€ a 15,75\,€ y lo devuelve todo desde julio de 2026. Aquí la línea de tendencia sale alcista aunque el precio termina donde empezó: la regresión resume la serie con una recta y no capta un cambio de dirección. La tendencia hay que leerla junto con la propia línea.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{img/ej4_idr.png}\\[0.5em]
+    \includegraphics[width=\textwidth]{img/ej4_tef.png}\\[0.5em]
+    \includegraphics[width=\textwidth]{img/ej4_mrl.png}
+    \caption{Evolución del precio de cierre de Indra, Telefónica y Merlin, con su línea de tendencia.}
+\end{figure}
+
+\subsection*{Ej5 (opcional): efecto viernes}
+\pendiente
+
+\subsection*{Ej6 (opcional): otro análisis}
+\pendiente
+
+\subsection*{Ej7: diseño del dashboard}
+\pendiente
+
+\subsection*{Ej8 (opcional): tema}
+\pendiente
+
+\subsection*{Ej9: dashboard por sector}
+\pendiente
+
+\end{document}

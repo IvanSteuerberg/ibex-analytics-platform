@@ -1,0 +1,78 @@
+table dim_fecha
+	lineageTag: 7d9dd124-bb9a-44c2-b847-74b43fb997db
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 49331729-c1c4-4782-aade-588279ca1e17
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c95561b-c215-48bd-9985-22b0fb9cf431
+		summarizeBy: none
+		sourceColumn: Anio
+
+		annotation SummarizationSetBy = User
+
+	column Trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ea5d38c-ba9e-468c-ad7d-e70a7d9700d5
+		summarizeBy: none
+		sourceColumn: Trimestre
+
+		annotation SummarizationSetBy = User
+
+	column Mes
+		dataType: int64
+		formatString: 0
+		lineageTag: f4048ece-8ee1-4cf8-81fc-c60afbfc73bd
+		summarizeBy: none
+		sourceColumn: Mes
+
+		annotation SummarizationSetBy = User
+
+	column Dia_Semana
+		dataType: string
+		lineageTag: a459e3d4-dfbb-441c-bf63-dcef05f004a5
+		summarizeBy: none
+		sourceColumn: Dia_Semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia_Semana_Num
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f37c8ac-d7c1-41a4-aec5-e66f6e38290c
+		summarizeBy: none
+		sourceColumn: Dia_Semana_Num
+
+		annotation SummarizationSetBy = User
+
+	partition dim_fecha = m
+		mode: import
+		source =
+				let
+				    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_fecha"),
+				    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+				    #"Archivos ocultos filtrados1" = Table.SelectRows(#"Filas filtradas", each [Attributes]?[Hidden]? <> true),
+				    #"Invocar función personalizada1" = Table.AddColumn(#"Archivos ocultos filtrados1", "Transformar archivo (2)", each #"Transformar archivo (2)"([Content])),
+				    #"Columnas con nombre cambiado1" = Table.RenameColumns(#"Invocar función personalizada1", {"Name", "Source.Name"}),
+				    #"Otras columnas quitadas1" = Table.SelectColumns(#"Columnas con nombre cambiado1", {"Source.Name", "Transformar archivo (2)"}),
+				    #"Columna de tabla expandida1" = Table.ExpandTableColumn(#"Otras columnas quitadas1", "Transformar archivo (2)", Table.ColumnNames(#"Transformar archivo (2)"(#"Archivo de ejemplo (2)"))),
+				    #"Tipo cambiado" = Table.TransformColumnTypes(#"Columna de tabla expandida1",{{"Source.Name", type text}, {"Date", type date}, {"Anio", Int64.Type}, {"Trimestre", Int64.Type}, {"Mes", Int64.Type}, {"Dia_Semana", type text}, {"Dia_Semana_Num", Int64.Type}}),
+				    #"Columnas quitadas" = Table.RemoveColumns(#"Tipo cambiado",{"Source.Name"})
+				in
+				    #"Columnas quitadas"
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

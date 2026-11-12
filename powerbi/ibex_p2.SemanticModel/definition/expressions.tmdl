@@ -1,0 +1,178 @@
+/// Ruta de las carpetas gold
+expression RutaGold = "C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: f636b5b5-7701-4617-9d7d-d1a7949f9600
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Text
+
+expression Parámetro1 = #"Archivo de ejemplo" meta [IsParameterQuery=true, BinaryIdentifier=#"Archivo de ejemplo", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 53466115-286c-46ad-8569-09a31d68ee1e
+	queryGroup: 'Transformar archivo de dim_empresa\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression Parámetro2 = #"Archivo de ejemplo (2)" meta [IsParameterQuery=true, BinaryIdentifier=#"Archivo de ejemplo (2)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: ec1e05bd-0b49-46b4-8c36-818f42ef8454
+	queryGroup: 'Transformar archivo de dim_fecha\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression Parámetro3 = #"Archivo de ejemplo (3)" meta [IsParameterQuery=true, BinaryIdentifier=#"Archivo de ejemplo (3)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 638698af-68bf-4477-a9b5-646d959956ce
+	queryGroup: 'Transformar archivo de dim_sector\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression Parámetro4 = #"Archivo de ejemplo (4)" meta [IsParameterQuery=true, BinaryIdentifier=#"Archivo de ejemplo (4)", Type="Binary", IsParameterQueryRequired=true]
+	lineageTag: 04a0662d-9044-4c76-87f5-036b04720705
+	queryGroup: 'Transformar archivo de hecho_cotizacion\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Archivo de ejemplo' =
+		let
+		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_empresa"),
+		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+		    Navegación1 = #"Filas filtradas"{0}[Content]
+		in
+		    Navegación1
+	lineageTag: bd530f46-04b3-4f03-a492-70a92de6aaeb
+	queryGroup: 'Transformar archivo de dim_empresa\Consultas auxiliares'
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transformar archivo de ejemplo' =
+		let
+		    Origen = Parquet.Document(Parámetro1, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+	lineageTag: 0f04109c-dd18-4f4e-8fd7-41b948f04699
+	queryGroup: 'Transformar archivo de dim_empresa'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transformar archivo' =
+		let
+		    Origen = (Parámetro1 as binary) => let
+		    Origen = Parquet.Document(Parámetro1, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+		in
+		    Origen
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transformar archivo de ejemplo""}" ]
+	lineageTag: f600ac46-71c1-4cc4-b1a9-d87a7900530a
+	queryGroup: 'Transformar archivo de dim_empresa\Consultas auxiliares'
+
+	annotation PBI_ResultType = Function
+
+expression 'Archivo de ejemplo (2)' =
+		let
+		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_fecha"),
+		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+		    Navegación1 = #"Filas filtradas"{0}[Content]
+		in
+		    Navegación1
+	lineageTag: 5306a2ee-8bc7-4b69-a26a-9091186c5333
+	queryGroup: 'Transformar archivo de dim_fecha\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transformar archivo de ejemplo (2)' =
+		let
+		    Origen = Parquet.Document(Parámetro2, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+	lineageTag: 52d74f70-5bac-46d5-9ee9-2ca0fc5766d4
+	queryGroup: 'Transformar archivo de dim_fecha'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transformar archivo (2)' =
+		let
+		    Origen = (Parámetro2 as binary) => let
+		    Origen = Parquet.Document(Parámetro2, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+		in
+		    Origen
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transformar archivo de ejemplo (2)""}" ]
+	lineageTag: 5a496fd7-16a4-495d-82cc-3e65a4f11155
+	queryGroup: 'Transformar archivo de dim_fecha\Consultas auxiliares'
+
+	annotation PBI_ResultType = Exception
+
+expression 'Archivo de ejemplo (3)' =
+		let
+		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_sector"),
+		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+		    Navegación1 = #"Filas filtradas"{0}[Content]
+		in
+		    Navegación1
+	lineageTag: f7c87b42-ff14-4cca-ab7e-aa8eb6e6eb22
+	queryGroup: 'Transformar archivo de dim_sector\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transformar archivo de ejemplo (3)' =
+		let
+		    Origen = Parquet.Document(Parámetro3, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+	lineageTag: eba15f33-771f-4890-bd51-6da2018b1299
+	queryGroup: 'Transformar archivo de dim_sector'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transformar archivo (3)' =
+		let
+		    Origen = (Parámetro3 as binary) => let
+		    Origen = Parquet.Document(Parámetro3, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+		in
+		    Origen
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transformar archivo de ejemplo (3)""}" ]
+	lineageTag: 1e14cb72-e398-4854-a475-181a5256d27a
+	queryGroup: 'Transformar archivo de dim_sector\Consultas auxiliares'
+
+	annotation PBI_ResultType = Exception
+
+expression 'Archivo de ejemplo (4)' =
+		let
+		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\hecho_cotizacion"),
+		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
+		    Navegación1 = #"Filas filtradas"{0}[Content]
+		in
+		    Navegación1
+	lineageTag: 621d0e1f-2582-47d7-9b6b-63ccd38b2c35
+	queryGroup: 'Transformar archivo de hecho_cotizacion\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transformar archivo de ejemplo (4)' =
+		let
+		    Origen = Parquet.Document(Parámetro4, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+	lineageTag: af69f3ba-1d2f-4d49-9fe3-9ac09b3b8704
+	queryGroup: 'Transformar archivo de hecho_cotizacion'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transformar archivo (4)' =
+		let
+		    Origen = (Parámetro4 as binary) => let
+		    Origen = Parquet.Document(Parámetro4, [Compression=null, LegacyColumnNameEncoding=false, MaxDepth=null])
+		in
+		    Origen
+		in
+		    Origen
+	mAttributes: [ FunctionQueryBinding = "{""exemplarFormulaName"":""Transformar archivo de ejemplo (4)""}" ]
+	lineageTag: b10ea533-4480-4858-84b0-0e673a75974c
+	queryGroup: 'Transformar archivo de hecho_cotizacion\Consultas auxiliares'
+
+	annotation PBI_ResultType = Function
+

@@ -125,3 +125,11 @@ $RECYCLE.BIN/
 # --- LaTeX (solo se versiona el .tex de la memoria) ---
 memoria/*
 !memoria/*.tex
+!memoria/img/
+
+# --- Power BI (se versiona el proyecto .pbip, que es texto) ---
+# Caché de datos y ajustes locales: Power BI los regenera al actualizar
+powerbi/**/.pbi/cache.abf
+powerbi/**/.pbi/localSettings.json
+# El .pbix se genera al final para la entrega (binario)
+powerbi/*.pbix

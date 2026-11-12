@@ -1,0 +1,12 @@
+relationship AutoDetected_a7a97adf-7757-4085-a361-c6c5d437fcee
+	fromColumn: hechos.Ticker
+	toColumn: dim_empresa.Ticker
+
+relationship AutoDetected_f0db7d3d-7bdd-4ac9-8a24-0dde5158851c
+	fromColumn: hechos.Sector
+	toColumn: dim_sector.Sector
+
+relationship 1f44922e-089b-94d2-10a7-d4915a8e1107
+	fromColumn: hechos.Date
+	toColumn: dim_fecha.Date
+
