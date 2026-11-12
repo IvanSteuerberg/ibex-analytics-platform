@@ -20,6 +20,7 @@ class GoldDataModel:
                 .withColumn("Trimestre", F.quarter("Date"))
                 .withColumn("Mes", F.month("Date"))
                 .withColumn("Dia_Semana", F.date_format("Date", "EEEE"))
+                .withColumn("Dia_Semana_Num", F.weekday("Date") + 1)  # 1 = lunes ... 5 = viernes, para ordenar en Power BI
                 .orderBy("Date"))
 
     def construir_hecho(self, df_ibex: DataFrame, df_empresa: DataFrame, df_sentimiento: DataFrame) -> DataFrame:

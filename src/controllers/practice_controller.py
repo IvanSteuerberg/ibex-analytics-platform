@@ -201,6 +201,6 @@ class PracticeController:
         }
 
         for origen, destino in tablas.items():
-            self.lake.escribir_parquet(self.lake.leer_delta(origen), destino)
+            self.lake.exportar_parquet(self.lake.leer_delta(origen), destino)
             tabla = destino.rsplit("/", 1)[-1]
             self.view.mostrar_filas_exportadas(tabla, self.lake.leer_parquet(destino).count())

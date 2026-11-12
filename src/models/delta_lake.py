@@ -16,6 +16,10 @@ class DeltaLakeModel:
     def escribir_parquet(self, df: DataFrame, ruta: str, modo: str = "overwrite"):
         df.write.mode(modo).parquet(ruta)
 
+    def exportar_parquet(self, df: DataFrame, ruta: str):
+        """Exporta en un único fichero .parquet (coalesce(1)): Power BI combina un solo fichero por tabla."""
+        self.escribir_parquet(df.coalesce(1), ruta)
+
     # --- Delta ---
 
     def convertir_a_delta(self, ruta: str):
