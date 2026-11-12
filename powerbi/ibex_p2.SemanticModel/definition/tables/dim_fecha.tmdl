@@ -44,6 +44,9 @@ table dim_fecha
 		lineageTag: a459e3d4-dfbb-441c-bf63-dcef05f004a5
 		summarizeBy: none
 		sourceColumn: Dia_Semana
+		sortByColumn: Dia_Semana_Num
+
+		changedProperty = SortByColumn
 
 		annotation SummarizationSetBy = Automatic
 

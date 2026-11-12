@@ -107,7 +107,16 @@ Antes de conectar Power BI se han hecho dos cambios en la exportación de la Pr�
 \end{figure}
 
 \subsection*{Ej5 (opcional): efecto viernes}
-\pendiente
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{img/ej5_viernes.png}
+    \caption{Retorno medio por día de la semana.}
+\end{figure}
+\begin{itemize}
+    \item \textbf{Gráfico:} de barras, porque compara una medida entre categorías, los cinco días de la semana. Los días se ordenan con \code{Dia\_Semana\_Num} para que vayan de lunes a viernes y no por orden alfabético.
+    \item \textbf{Datos:} \code{dim\_fecha[Dia\_Semana]} y la medida \textit{Retorno medio \%} del Ej3. El segmentador de empresa no filtra este gráfico, así que muestra el mercado completo.
+    \item \textbf{Análisis:} el viernes es el peor día, con 0,028\,\%, frente a 0,070--0,170\,\% del resto; el miércoles y el lunes son los mejores. El efecto viernes de las finanzas conductuales predice lo contrario, que los viernes suben más por el optimismo antes del fin de semana, así que en estos datos no se cumple. Aun así, las diferencias son de centésimas de punto y cada día suma unas 105 sesiones, por lo que unos pocos días extremos, como las caídas de abril de 2025, bastan para mover una barra. Con dos años de datos no se puede afirmar un efecto día de la semana.
+\end{itemize}
 
 \subsection*{Ej6 (opcional): otro análisis}
 \pendiente
