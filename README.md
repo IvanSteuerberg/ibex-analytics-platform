@@ -14,3 +14,6 @@ El proyecto implementa un pipeline de datos bajo la arquitectura Medallion (capa
 *   **Procesamiento:** Apache Spark 4.x (PySpark en modo local).
 *   **Almacenamiento:** Delta Lake.
 *   **Características:** Soporte para transacciones ACID, control de versiones (Time Travel) y operaciones como MERGE y DELETE.
+
+## Power BI (Práctica 2)
+El informe está en `powerbi/ibex_p2.pbix` y lleva los datos importados, así que se abre sin ejecutar nada. Lee la gold exportada en `data/export/gold` (Ej13 de la Práctica 1). Para actualizar los datos en otro ordenador: *Inicio → Transformar datos → Editar parámetros* y poner en `RutaGold` la ruta completa a `data/export/gold`; después, *Actualizar*.

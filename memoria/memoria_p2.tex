@@ -48,6 +48,7 @@ Antes de conectar Power BI se han hecho dos cambios en la exportación de la Pr�
         \item Renombrar la consulta: \code{hechos}, \code{dim\_empresa}, \code{dim\_sector} y \code{dim\_fecha}.
     \end{enumerate}
     \item \textbf{Resultado:} cuatro tablas en modo \textit{Import} (Power BI copia los datos a su modelo en memoria): \code{hechos} con 19\,152 filas, \code{dim\_empresa} con 36, \code{dim\_sector} con 11 y \code{dim\_fecha} con 532.
+    \item \textbf{Ruta de los datos:} las cuatro consultas leen su carpeta a partir del parámetro \code{RutaGold} (\code{Folder.Files(RutaGold \& "\textbackslash{}dim\_empresa")}\ldots). Power BI no admite rutas relativas, así que para actualizar en otro ordenador basta con cambiar ese parámetro en \textit{Transformar datos} $\rightarrow$ \textit{Editar parámetros}. Sin actualizar, el \code{.pbix} se abre con los datos que lleva importados.
 \end{itemize}
 
 \subsection*{Ej2: modelo en estrella}
