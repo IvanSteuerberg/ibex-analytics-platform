@@ -71,7 +71,7 @@ Antes de conectar Power BI se han hecho dos cambios en la exportación de la Pr�
     \caption{Tarjeta con las cuatro medidas del panorama.}
 \end{figure}
 \begin{itemize}
-    \item \textbf{Gráfico:} un visual \textit{Tarjeta} con cuatro medidas en fila en la parte superior de la página. Una tarjeta destaca un único número que se lee de un vistazo, y es la cabecera natural del dashboard: da el contexto antes de entrar en los gráficos.
+    \item \textbf{Gráfico:} un visual \textit{Tarjeta} con cuatro medidas en fila en la parte superior de la página. Una tarjeta destaca un único número que se lee de un vistazo, por eso va arriba del todo, para dar el contexto antes que los gráficos.
     \item \textbf{Medidas} (DAX, creadas en \code{hechos}):
     \begin{itemize}
         \item \code{Empresas = DISTINCTCOUNT(hechos[Ticker])}: empresas distintas; \code{COUNT} contaría filas (19\,152).
@@ -90,7 +90,7 @@ Antes de conectar Power BI se han hecho dos cambios en la exportación de la Pr�
     \item \textbf{Datos:} eje X \code{dim\_fecha[Date]} y eje Y \code{hechos[Close]} agregado como \textit{Promedio}. La fecha se toma de la dimensión para que el filtro viaje por la relación del modelo. Como se desactivó la fecha automática, el eje es continuo y sin jerarquía año/trimestre/mes.
     \item \textbf{Segmentador:} \code{dim\_empresa[Ticker]} con selección única. Con varias empresas (o ninguna, que equivale a todas) cada punto sería la media de precios de acciones muy distintas, una cifra que no es el precio de ninguna y que dominaría la más cara. Con selección única la línea es siempre el precio de cierre de una empresa.
     \item \textbf{Interacciones:} con \textit{Editar interacciones} el segmentador filtra solo el gráfico y no la tarjeta del Ej3, que mantiene el panorama del IBEX completo; con una empresa fija, \textit{Empresas} valdría siempre 1.
-    \item \textbf{Línea de tendencia} (pestaña \textit{Análisis}): recta de regresión del precio frente al tiempo, que resume hacia dónde va la serie por encima del ruido diario.
+    \item \textbf{Línea de tendencia} (pestaña \textit{Análisis}): recta de regresión del precio frente al tiempo, que muestra hacia dónde va el precio sin las subidas y bajadas de cada día.
 \end{itemize}
 
 \textbf{Análisis.} Se comentan tres empresas con comportamientos distintos, elegidas calculando en Spark la variación del cierre entre el 01-10-2024 y el 30-10-2026:
@@ -129,7 +129,7 @@ Antes de conectar Power BI se han hecho dos cambios en la exportación de la Pr�
     \item \textbf{Gráfico:} de dispersión con burbujas. Sirve para ver si dos medidas numéricas van juntas, y el tamaño añade una tercera.
     \item \textbf{Datos:} \code{dim\_sector[Sector]} como valores, \textit{Sentimiento medio} en el eje X, \textit{Retorno medio \%} en el Y y, como tamaño, la medida \textit{VolatilidadMedia}, el rango medio del día:
     \code{VolatilidadMedia = AVERAGE(hechos[Rango\_Dia\_Pct])}. El segmentador de empresa no lo filtra.
-    \item \textbf{Análisis:} los tres sectores con menos sentimiento (Consumer Defensive, Real Estate y Communication Services, entre 49 y 49,7) tienen un retorno nulo o negativo, y todos los que pasan de 50 tienen retorno positivo. Por encima de 50 ya no hay un orden claro: Energy tiene el mayor retorno (0,22\,\%) con un sentimiento medio, y Healthcare (50,46) se queda casi en cero. Además el sentimiento solo varía entre 49 y 51,2. Se ve una relación positiva débil, no una regla. En las burbujas, Technology es el sector más volátil (2,81\,\%) y Communication Services el que menos (1,85\,\%).
+    \item \textbf{Análisis:} los tres sectores con menos sentimiento (Consumer Defensive, Real Estate y Communication Services, entre 49 y 49,7) tienen un retorno nulo o negativo, y todos los que pasan de 50 tienen retorno positivo. Por encima de 50 ya no hay un orden claro: Energy tiene el mayor retorno (0,22\,\%) con un sentimiento medio, y Healthcare (50,46) se queda casi en cero. Además el sentimiento solo varía entre 49 y 51,2. Se ve una relación positiva débil, con excepciones claras. En las burbujas, Technology es el sector más volátil (2,81\,\%) y Communication Services el que menos (1,85\,\%).
 \end{itemize}
 
 \subsection*{Ej7: diseño del dashboard}
