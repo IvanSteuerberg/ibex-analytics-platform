@@ -3,7 +3,7 @@
   "name": "af28ab0b729dd2d07361",
   "position": {
     "x": 0,
-    "y": 0,
+    "y": 75.657992565055764,
     "z": 0,
     "height": 150,
     "width": 1920,
@@ -158,23 +158,5 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "dd7015b84149901eaa8a",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "hechos"
-              }
-            },
-            "Property": "Empresas"
-          }
-        },
-        "type": "Advanced"
-      }
-    ]
   }
 }

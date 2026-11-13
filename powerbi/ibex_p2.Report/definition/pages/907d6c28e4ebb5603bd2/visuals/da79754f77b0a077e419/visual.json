@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "da79754f77b0a077e419",
+  "position": {
+    "x": 1328.733153638814,
+    "y": 699.94609164420478,
+    "z": 2000,
+    "height": 150.39164490861617,
+    "width": 177.96344647519581,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_empresa"
+                    }
+                  },
+                  "Property": "VolatilidadMedia"
+                }
+              },
+              "queryRef": "dim_empresa.VolatilidadMedia",
+              "nativeQueryRef": "VolatilidadMedia"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "dim_empresa"
+                  }
+                },
+                "Property": "VolatilidadMedia"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "0e3f977a104ba3e476d0",
   "position": {
-    "x": 476.17529880478082,
-    "y": 149.1633466135458,
-    "z": 2,
+    "x": 374.0074349442379,
+    "y": 236.96654275092936,
+    "z": 2000,
     "height": 390.11952191235059,
     "width": 967.64940239043824,
-    "tabOrder": 2
+    "tabOrder": 2000
   },
   "visual": {
     "visualType": "lineChart",
@@ -126,23 +126,5 @@
       ]
     },
     "drillFilterOtherVisuals": true
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "52b2641e0e50a30cd1de",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "dim_fecha"
-              }
-            },
-            "Property": "Date"
-          }
-        },
-        "type": "Categorical"
-      }
-    ]
   }
 }

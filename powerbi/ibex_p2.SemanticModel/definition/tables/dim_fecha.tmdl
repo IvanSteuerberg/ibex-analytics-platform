@@ -63,7 +63,7 @@ table dim_fecha
 		mode: import
 		source =
 				let
-				    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_fecha"),
+				    Origen = Folder.Files(RutaGold & "\dim_fecha"),
 				    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 				    #"Archivos ocultos filtrados1" = Table.SelectRows(#"Filas filtradas", each [Attributes]?[Hidden]? <> true),
 				    #"Invocar función personalizada1" = Table.AddColumn(#"Archivos ocultos filtrados1", "Transformar archivo (2)", each #"Transformar archivo (2)"([Content])),

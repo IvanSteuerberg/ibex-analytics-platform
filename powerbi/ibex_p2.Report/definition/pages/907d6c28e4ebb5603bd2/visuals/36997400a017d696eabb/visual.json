@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "36997400a017d696eabb",
+  "position": {
+    "x": 1507.2776280323449,
+    "y": 699.94609164420478,
+    "z": 4000,
+    "height": 150,
+    "width": 178,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Empresas"
+                }
+              },
+              "queryRef": "hechos.Empresas",
+              "nativeQueryRef": "Empresas"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "hechos"
+                  }
+                },
+                "Property": "Empresas"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

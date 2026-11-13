@@ -2,153 +2,106 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "a94299c9361296e10d2d",
   "position": {
-    "x": 0,
-    "y": 149.1633466135458,
-    "z": 1,
-    "height": 390.11952191235059,
-    "width": 474.26294820717129,
-    "tabOrder": 1
+    "x": 1357.5613382899628,
+    "y": 236.96654275092936,
+    "z": 1000,
+    "height": 806.542750929368,
+    "width": 549.59107806691452,
+    "tabOrder": 1000
   },
   "visual": {
-    "visualType": "slicer",
+    "visualType": "scatterChart",
     "query": {
       "queryState": {
-        "Values": {
+        "Category": {
           "projections": [
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
+                      "Entity": "dim_sector"
+                    }
+                  },
+                  "Property": "Sector"
+                }
+              },
+              "queryRef": "dim_sector.Sector",
+              "nativeQueryRef": "Sector",
+              "active": true
+            }
+          ]
+        },
+        "Size": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
                       "Entity": "dim_empresa"
                     }
                   },
-                  "Property": "Ticker"
+                  "Property": "VolatilidadMedia"
                 }
               },
-              "queryRef": "dim_empresa.Ticker",
-              "nativeQueryRef": "Ticker",
+              "queryRef": "dim_empresa.VolatilidadMedia",
+              "nativeQueryRef": "VolatilidadMedia"
+            }
+          ]
+        },
+        "X": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Sentimiento medio"
+                }
+              },
+              "queryRef": "hechos.Sentimiento medio",
+              "nativeQueryRef": "Sentimiento medio",
               "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "hechos"
+                    }
+                  },
+                  "Property": "Retorno medio %"
+                }
+              },
+              "queryRef": "hechos.Retorno medio %",
+              "nativeQueryRef": "Retorno medio %"
             }
           ]
         }
       }
     },
     "objects": {
-      "data": [
-        {
-          "properties": {
-            "mode": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Dropdown'"
-                }
-              }
-            }
-          }
-        }
-      ],
       "general": [
         {
-          "properties": {
-            "orientation": {
-              "expr": {
-                "Literal": {
-                  "Value": "1D"
-                }
-              }
-            },
-            "filter": {
-              "filter": {
-                "Version": 2,
-                "From": [
-                  {
-                    "Name": "d",
-                    "Entity": "dim_empresa",
-                    "Type": 0
-                  }
-                ],
-                "Where": [
-                  {
-                    "Condition": {
-                      "In": {
-                        "Expressions": [
-                          {
-                            "Column": {
-                              "Expression": {
-                                "SourceRef": {
-                                  "Source": "d"
-                                }
-                              },
-                              "Property": "Ticker"
-                            }
-                          }
-                        ],
-                        "Values": [
-                          [
-                            {
-                              "Literal": {
-                                "Value": "'AENA.MC'"
-                              }
-                            }
-                          ]
-                        ]
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          }
+          "properties": {}
         }
       ],
-      "selection": [
+      "categoryLabels": [
         {
           "properties": {
-            "strictSingleSelect": {
+            "show": {
               "expr": {
                 "Literal": {
                   "Value": "true"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "items": [
-        {
-          "properties": {
-            "textSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "15D"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "header": [
-        {
-          "properties": {
-            "textSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "15D"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Filtrar por Ticker'"
-                }
-              }
-            },
-            "outlineStyle": {
-              "expr": {
-                "Literal": {
-                  "Value": "0D"
                 }
               }
             }
@@ -163,14 +116,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             },
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Filtrar'"
+                  "Value": "'Sentimiento vs Retorno Por Sector'"
                 }
               }
             }

@@ -13,7 +13,7 @@ table dim_sector
 		mode: import
 		source =
 				let
-				    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_sector"),
+				    Origen = Folder.Files(RutaGold & "\dim_sector"),
 				    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 				    #"Archivos ocultos filtrados1" = Table.SelectRows(#"Filas filtradas", each [Attributes]?[Hidden]? <> true),
 				    #"Invocar función personalizada1" = Table.AddColumn(#"Archivos ocultos filtrados1", "Transformar archivo (3)", each #"Transformar archivo (3)"([Content])),

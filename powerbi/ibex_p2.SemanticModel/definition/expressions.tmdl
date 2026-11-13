@@ -1,5 +1,5 @@
 /// Ruta de las carpetas gold
-expression RutaGold = "C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression RutaGold = "C:\Users\Alvaro\ibex-analytics-platform\data\export\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: f636b5b5-7701-4617-9d7d-d1a7949f9600
 
 	annotation PBI_NavigationStepName = Navegación
@@ -32,7 +32,7 @@ expression Parámetro4 = #"Archivo de ejemplo (4)" meta [IsParameterQuery=true, 
 
 expression 'Archivo de ejemplo' =
 		let
-		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_empresa"),
+		    Origen = Folder.Files(RutaGold & "\dim_empresa"),
 		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 		    Navegación1 = #"Filas filtradas"{0}[Content]
 		in
@@ -70,7 +70,7 @@ expression 'Transformar archivo' =
 
 expression 'Archivo de ejemplo (2)' =
 		let
-		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_fecha"),
+		    Origen = Folder.Files(RutaGold & "\dim_fecha"),
 		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 		    Navegación1 = #"Filas filtradas"{0}[Content]
 		in
@@ -106,7 +106,7 @@ expression 'Transformar archivo (2)' =
 
 expression 'Archivo de ejemplo (3)' =
 		let
-		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\dim_sector"),
+		    Origen = Folder.Files(RutaGold & "\dim_sector"),
 		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 		    Navegación1 = #"Filas filtradas"{0}[Content]
 		in
@@ -142,7 +142,7 @@ expression 'Transformar archivo (3)' =
 
 expression 'Archivo de ejemplo (4)' =
 		let
-		    Origen = Folder.Files("C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold\hecho_cotizacion"),
+		    Origen = Folder.Files(RutaGold & "\hecho_cotizacion"),
 		    #"Filas filtradas" = Table.SelectRows(Origen, each ([Extension] = ".parquet")),
 		    Navegación1 = #"Filas filtradas"{0}[Content]
 		in
