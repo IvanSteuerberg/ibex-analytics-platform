@@ -1,5 +1,5 @@
 /// Ruta de las carpetas gold
-expression RutaGold = "C:\Users\Alvaro\ibex-analytics-platform\data\export\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression RutaGold = "C:\Users\Hallo\Documents\Proyectos\ibex-analytics-platform\data\export\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: f636b5b5-7701-4617-9d7d-d1a7949f9600
 
 	annotation PBI_NavigationStepName = Navegación

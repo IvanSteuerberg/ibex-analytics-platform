@@ -17,6 +17,10 @@ table hechos
 		formatString: 0
 		lineageTag: 908e0618-379d-4aea-8748-341039503535
 
+	measure VolatilidadMedia = AVERAGE(hechos[Rango_Dia_Pct])
+		formatString: 0.00
+		lineageTag: 6a86e20c-db50-453a-ada0-9974239a221e
+
 	column Sector
 		dataType: string
 		lineageTag: de7bcd05-c5f1-4d9a-a067-01ef54d93f23

@@ -1,11 +1,6 @@
 table dim_empresa
 	lineageTag: 47299ec2-3b8c-4973-9c65-752672123e33
 
-	measure VolatilidadMedia = AVERAGE(hechos[Rango_Dia_Pct])
-		lineageTag: 6a86e20c-db50-453a-ada0-9974239a221e
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
 	column Ticker
 		dataType: string
 		lineageTag: de2f1cea-effa-419d-8bc6-209c65d9c142

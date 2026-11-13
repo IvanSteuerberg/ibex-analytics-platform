@@ -36,22 +36,17 @@
           "projections": [
             {
               "field": {
-                "Aggregation": {
+                "Measure": {
                   "Expression": {
-                    "Column": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "hechos"
-                        }
-                      },
-                      "Property": "Close"
+                    "SourceRef": {
+                      "Entity": "hechos"
                     }
                   },
-                  "Function": 1
+                  "Property": "Retorno medio %"
                 }
               },
-              "queryRef": "Avg(hechos.Close)",
-              "nativeQueryRef": "Promedio de Close"
+              "queryRef": "hechos.Retorno medio %",
+              "nativeQueryRef": "Retorno medio %"
             }
           ]
         }
@@ -60,18 +55,13 @@
         "sort": [
           {
             "field": {
-              "Aggregation": {
+              "Measure": {
                 "Expression": {
-                  "Column": {
-                    "Expression": {
-                      "SourceRef": {
-                        "Entity": "hechos"
-                      }
-                    },
-                    "Property": "Close"
+                  "SourceRef": {
+                    "Entity": "hechos"
                   }
                 },
-                "Function": 1
+                "Property": "Retorno medio %"
               }
             },
             "direction": "Descending"
@@ -98,8 +88,50 @@
             }
           }
         }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Retorno medio diario por empresa'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "labelPrecision": {
+              "expr": {
+                "Literal": {
+                  "Value": "3L"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

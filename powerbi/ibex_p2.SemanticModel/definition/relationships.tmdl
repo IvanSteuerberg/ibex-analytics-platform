@@ -10,8 +10,3 @@ relationship 1f44922e-089b-94d2-10a7-d4915a8e1107
 	fromColumn: hechos.Date
 	toColumn: dim_fecha.Date
 
-relationship 217a1c97-94bd-f533-7fbe-32c26f0979b8
-	isActive: false
-	fromColumn: dim_empresa.Sector
-	toColumn: dim_sector.Sector
-

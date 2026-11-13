@@ -39,13 +39,13 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_empresa"
+                      "Entity": "hechos"
                     }
                   },
                   "Property": "VolatilidadMedia"
                 }
               },
-              "queryRef": "dim_empresa.VolatilidadMedia",
+              "queryRef": "hechos.VolatilidadMedia",
               "nativeQueryRef": "VolatilidadMedia"
             }
           ]
